@@ -1,0 +1,61 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Admin",
+      "email": "admin@edclaudia.com",
+      "password": "$2b$10$2FCGMLcWsnDzyw/AzZx7Ouqyf3rA2kpQnU1pZuph8utwCQbgWeL3m",
+      "role": "admin"
+    },
+    {
+      "id": 1777179367401,
+      "name": "Emanuel Davi Ribeiro Domingos",
+      "email": "emanueldavird@gmail.com",
+      "password": "$2b$10$GfwPz04d0kzPkMej6RPaOOxgErAlHqoSG3JOf5ymS.b8hERAS1Rmq",
+      "role": "customer"
+    }
+  ],
+  "products": [
+    {
+      "id": 1,
+      "name": "Ekos Castanha Hidratante",
+      "price": 59.9,
+      "category": "Natura",
+      "stock": 15,
+      "image": "http://localhost:3000/uploads/1777240209088-669466186.jpg",
+      "description": "Hidratação intensa com castanha do Pará.",
+      "sales": 17
+    },
+    {
+      "id": 2,
+      "name": "Malbec Perfume",
+      "price": 139.9,
+      "category": "O Boticário",
+      "stock": 14,
+      "image": "https://picsum.photos/id/12/300/200",
+      "description": "Fragrância amadeirada sofisticada.",
+      "sales": 26
+    },
+    {
+      "id": 3,
+      "name": "Luna Feminino Avon",
+      "price": 69.9,
+      "category": "Avon",
+      "stock": 25,
+      "image": "https://picsum.photos/id/26/300/200",
+      "description": "Suave e feminino.",
+      "sales": 14
+    },
+    {
+      "id": 4,
+      "name": "Chronos Anti-Idade",
+      "price": 89.9,
+      "category": "Natura",
+      "stock": 9,
+      "image": "https://picsum.photos/id/29/300/200",
+      "description": "Creme facial rejuvenescedor.",
+      "sales": 6
+    }
+  ],
+  "orders": []
+}
