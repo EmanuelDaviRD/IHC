@@ -246,10 +246,8 @@ app.get("*", (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
-    console.log(`📄 Landing: http://localhost:${PORT}/`);
-    console.log(`🛒 Loja: http://localhost:${PORT}/loja`);
-    console.log(`👑 Admin: http://localhost:${PORT}/admin`);
-    console.log(`💾 Banco: MongoDB (JSON Fallback Removido)`);
-    console.log(`📱 Checkout: 100% via WhatsApp`);
+    console.log(`🚀 Servidor Online na porta ${PORT}`);
+    console.log(`💾 Banco de Dados: MongoDB Ativo`);
+    console.log(`📁 Modo: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`📱 Destino WhatsApp: 5588981078835`);
 });
