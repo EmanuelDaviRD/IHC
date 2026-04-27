@@ -19,8 +19,7 @@ const PORT = process.env.PORT || 3000;
 const SECRET = process.env.JWT_SECRET;
 
 if (!SECRET) {
-    console.error("❌ ERRO: JWT_SECRET não definido.");
-    process.exit(1);
+    console.warn("⚠️ JWT_SECRET não definido. Usando padrão para desenvolvimento.");
 }
 
 app.use(cors());
@@ -79,7 +78,28 @@ function isAdmin(req, res, next) {
     next();
 }
 
-connectDB().then(conn => { if (conn) useMongo = true; });
+async function seedAdmin() {
+    try {
+        const adminExists = await User.findOne({ role: "admin" });
+        if (!adminExists) {
+            const hashedPassword = await bcrypt.hash("admin123", 10);
+            const admin = new User({
+                name: "Admin",
+                email: "admin@edclaudia.com",
+                password: hashedPassword,
+                role: "admin"
+            });
+            await admin.save();
+            console.log("👤 Admin padrão criado no MongoDB: admin@edclaudia.com / admin123");
+        }
+    } catch (err) { console.error("❌ Erro ao criar admin inicial:", err.message); }
+}
+
+connectDB().then(async conn => { 
+    if (conn) { useMongo = true; await seedAdmin(); }
+}).catch(err => {
+    console.error("❌ Erro ao conectar no MongoDB:", err.message);
+});
 
 app.get("/", (req, res) => { res.sendFile(path.join(__dirname, "frontend", "landing.html")); });
 app.get("/loja", (req, res) => { res.sendFile(path.join(__dirname, "frontend", "index.html")); });
@@ -260,13 +280,19 @@ app.put("/pedidos/:id/status", authenticate, isAdmin, async (req, res) => {
 });
 
 app.post("/upload", authenticate, isAdmin, upload.single("image"), async (req, res) => {
-    if (!req.file) return res.status(400).json({ error: "Nenhuma imagem enviada" });
-    const cloudUrl = await uploadToCloudinary(req.file.path);
-    if (cloudUrl) {
-        fs.unlinkSync(req.file.path);
-        return res.json({ imageUrl: cloudUrl });
+    try {
+        if (!req.file) return res.status(400).json({ error: "Nenhuma imagem enviada" });
+        const cloudUrl = await uploadToCloudinary(req.file.path);
+        
+        if (cloudUrl) {
+            if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+            return res.json({ imageUrl: cloudUrl });
+        }
+        res.json({ imageUrl: `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}` });
+    } catch (err) {
+        if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+        res.status(500).json({ error: "Erro no processamento da imagem" });
     }
-    res.json({ imageUrl: `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}` });
 });
 
 app.get("/usuarios", authenticate, isAdmin, async (req, res) => {
@@ -317,8 +343,12 @@ app.post("/settings", authenticate, isAdmin, async (req, res) => {
 app.use(express.static(path.join(__dirname, "frontend"), { index: false }));
 
 app.use((req, res) => {
-    const apiPrefixes = ['/produtos', '/pedidos', '/register', '/login', '/upload', '/usuarios', '/admin-check', '/cep', '/settings'];
-    if (apiPrefixes.some(prefix => req.path.startsWith(prefix))) return res.status(404).json({ error: "Rota não encontrada" });
+    const apiPrefixes = ['/produtos', '/pedidos', '/register', '/login', '/upload', '/usuarios', '/admin-check', '/cep', '/settings', '/uploads'];
+    const isApi = apiPrefixes.some(prefix => req.path.startsWith(prefix));
+    const isFile = req.path.includes('.');
+    
+    if (isApi || isFile) return res.status(404).json({ error: "Recurso não encontrado" });
+    
     res.sendFile(path.join(__dirname, "frontend", "index.html"));
 });
 
@@ -330,4 +360,3 @@ app.listen(PORT, () => {
     console.log(`💾 Banco: ${useMongo ? 'MongoDB' : 'JSON (fallback)'}`);
     console.log(`📱 Checkout: 100% via WhatsApp`);
 });
-

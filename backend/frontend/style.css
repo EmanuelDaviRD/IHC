@@ -28,19 +28,19 @@
 }
 
 .dark {
-    --primary: #E8D5A3;
+    --primary: #C9A96E;
     --primary-light: #F4E4BC;
-    --secondary: #F8F6F1;
-    --secondary-light: #E8E4DC;
-    --dark: #F8F6F1;
-    --dark-card: #1A1A2E;
-    --dark-hover: #252540;
-    --light-bg: #0F0F1A;
-    --card-bg: #1A1A2E;
+    --secondary: #0A0A12; /* Azul quase preto profundo */
+    --secondary-light: #151525;
+    --dark: #050508; /* Preto absoluto para o fundo */
+    --dark-card: #0D0D15; /* Cinza muito escuro para cards */
+    --dark-hover: #161625;
+    --light-bg: #050508;
+    --card-bg: #0D0D15;
     --text: #E8E4DC;
     --text-light: #B8B4AC;
     --text-muted: #8B8B9B;
-    --border: #2D2D44;
+    --border: #1A1A2E; /* Bordas muito sutis */
     --shadow: 0 4px 20px rgba(0,0,0,0.3);
     --shadow-lg: 0 12px 40px rgba(0,0,0,0.4);
 }
@@ -199,18 +199,23 @@ h1, h2, h3, h4, h5, h6 {
     background: var(--card-bg);
     border-bottom: 1px solid var(--border);
     padding: 0.8rem 1rem;
-    overflow-x: auto;
     position: sticky;
     top: 130px;
     z-index: 99;
     box-shadow: var(--shadow);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60px;
 }
 
 .category-nav ul {
     display: flex;
-    gap: 0.5rem;
+    gap: 1rem;
     list-style: none;
     justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
     max-width: 1400px;
     margin: 0 auto;
     padding: 0 1rem;
@@ -220,7 +225,11 @@ h1, h2, h3, h4, h5, h6 {
     text-decoration: none;
     color: var(--text-light);
     font-weight: 500;
-    padding: 0.6rem 1.4rem;
+    padding: 0.5rem 1.5rem;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 50px;
     white-space: nowrap;
     transition: var(--transition);
@@ -231,7 +240,7 @@ h1, h2, h3, h4, h5, h6 {
 .category-nav a:hover,
 .category-nav a.active {
     background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    color: var(--secondary);
+    color: #0F0F1A; /* Texto escuro sobre o dourado para legibilidade premium */
     border-color: var(--primary);
     box-shadow: var(--shadow-gold);
 }
@@ -310,10 +319,35 @@ select:focus, .filter-group input:focus {
     height: 100%;
 }
 
+.product-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -150%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+        to right,
+        transparent,
+        rgba(201, 169, 110, 0.1),
+        rgba(255, 255, 255, 0.2),
+        rgba(201, 169, 110, 0.1),
+        transparent
+    );
+    transform: skewX(-25deg);
+    transition: 0.75s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    z-index: 3;
+}
+
 .product-card:hover {
     transform: translateY(-8px);
-    box-shadow: var(--shadow-lg);
-    border-color: rgba(201,169,110,0.3);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 20px rgba(201, 169, 110, 0.25);
+    border-color: var(--primary);
+}
+
+.product-card:hover::after {
+    left: 150%;
 }
 
 .product-badge {
@@ -412,7 +446,7 @@ select:focus, .filter-group input:focus {
 
 .btn-cart {
     background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    color: var(--secondary);
+    color: #0F0F1A;
     border: none;
     padding: 0.6rem 1rem;
     border-radius: 50px;
@@ -513,7 +547,7 @@ select:focus, .filter-group input:focus {
 
 .dropdown-content a:hover {
     background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    color: var(--secondary);
+    color: #0F0F1A;
 }
 
 .dropdown-content a:last-child {
@@ -539,15 +573,15 @@ select:focus, .filter-group input:focus {
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgba(15,15,26,0.7);
-    backdrop-filter: blur(8px);
+    background-color: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(15px);
     justify-content: center;
     align-items: center;
     padding: 2rem;
 }
 
 .modal-content {
-    background-color: var(--card-bg);
+    background-color: rgba(13, 13, 21, 0.98);
     margin: auto;
     padding: 2rem;
     border-radius: var(--radius);
@@ -558,7 +592,7 @@ select:focus, .filter-group input:focus {
     position: relative;
     box-shadow: var(--shadow-lg);
     animation: modalSlideIn 0.3s ease;
-    border: 1px solid var(--border);
+    border: 1px solid rgba(201, 169, 110, 0.3);
 }
 
 @keyframes modalSlideIn {
@@ -594,7 +628,7 @@ select:focus, .filter-group input:focus {
 
 .btn-primary {
     background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    color: var(--secondary);
+    color: #0F0F1A;
     border: none;
     padding: 0.85rem 1.5rem;
     border-radius: 50px;
@@ -674,12 +708,39 @@ footer {
     margin-bottom: 1rem;
 }
 
+.skeleton-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+}
+.skeleton-card {
+    background: var(--dark-card);
+    height: 400px;
+    border-radius: var(--radius);
+    position: relative;
+    overflow: hidden;
+    background: var(--dark-card);
+}
+.skeleton-card::before {
+    content: "";
+    display: block;
+    position: absolute;
+    left: -150%;
+    top: 0;
+    height: 100%;
+    width: 150%;
+    background: linear-gradient(to right, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%);
+    animation: skeleton-load 1.5s infinite;
+}
+@keyframes skeleton-load {
+    from { left: -150%; }
+    to { left: 150%; }
+}
+
 .loading {
     text-align: center;
     padding: 4rem;
-    font-size: 1.2rem;
-    color: var(--text-muted);
-    font-family: 'Playfair Display', serif;
+    color: var(--primary);
 }
 
 .tab-btn {
@@ -697,7 +758,7 @@ footer {
 
 .tab-btn.active {
     background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    color: var(--secondary);
+    color: #0F0F1A;
     box-shadow: var(--shadow-gold);
 }
 
@@ -713,7 +774,7 @@ footer {
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     font-size: 1rem;
-    background: var(--light-bg);
+    background: rgba(255, 255, 255, 0.05);
     color: var(--text);
     transition: var(--transition);
     font-family: 'Inter', sans-serif;
@@ -738,6 +799,13 @@ footer {
     border-radius: var(--radius-sm);
 }
 
+.stock-warning {
+    font-size: 0.75rem;
+    color: #ff6b6b;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
 .coupon-area {
     display: flex;
     gap: 0.5rem;
@@ -749,8 +817,15 @@ footer {
     padding: 0.8rem 1rem;
     border: 1px solid var(--border);
     border-radius: 50px;
-    background: var(--light-bg);
-    color: var(--text);
+    background: var(--dark-card) !important;
+    color: var(--text) !important;
+    outline: none;
+    transition: var(--transition);
+}
+
+.coupon-area input:focus {
+    border-color: var(--primary);
+    background: var(--dark-hover);
 }
 
 .product-modal img {
@@ -768,6 +843,39 @@ footer {
 .product-modal .product-price {
     font-size: 1.6rem;
     margin: 1rem 0;
+}
+
+/* Menu expansível de detalhes */
+.product-info-menu {
+    margin: 1.5rem 0;
+    border-top: 1px solid var(--border);
+}
+.menu-section {
+    border-bottom: 1px solid var(--border);
+}
+.menu-header {
+    width: 100%;
+    padding: 1rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: none;
+    border: none;
+    color: var(--text);
+    font-weight: 600;
+    cursor: pointer;
+}
+.menu-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+.menu-section.active .menu-content {
+    max-height: 200px;
+    padding-bottom: 1rem;
+}
+.menu-section.active i.fa-chevron-down {
+    transform: rotate(180deg);
 }
 
 @keyframes fadeInUp {
@@ -803,6 +911,16 @@ footer {
     background: var(--primary-dark);
 }
 
+/* Animação de esmaecimento para as abas */
+.fade-in {
+    animation: fadeInTab 0.4s ease forwards;
+}
+
+@keyframes fadeInTab {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 @media (max-width: 768px) {
     .products-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -831,4 +949,16 @@ footer {
 @media (max-width: 480px) {
     .products-grid { grid-template-columns: 1fr; }
     .icon-btn { width: 38px; height: 38px; }
+}
+
+/* Efeito de Pulso Dourado para Cupom Válido */
+@keyframes pulse-gold {
+    0% { box-shadow: 0 0 0 0 rgba(201, 169, 110, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(201, 169, 110, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(201, 169, 110, 0); }
+}
+
+.pulse-gold {
+    animation: pulse-gold 2s infinite;
+    border-color: var(--primary) !important;
 }

@@ -401,8 +401,6 @@ function closeModal() {
     if (modal) modal.remove();
 }
 
-// ===================== ORDERS WITH BULK DELETE =====================
-
 async function loadOrdersPage() {
     try {
         if (ordersCache.length === 0) {
@@ -437,12 +435,12 @@ async function loadOrdersPage() {
                         ${ordersCache.map(o => `
                             <tr data-order-id="${o._id || o.id}" style="transition:all 0.3s ease">
                                 <td style="text-align:center"><input type="checkbox" class="order-checkbox" value="${o._id || o.id}" onchange="updateBulkDeleteState()" style="cursor:pointer;width:16px;height:16px;accent-color:var(--gold)"></td>
-                                <td><strong>#${o._id || o.id}</strong></td>
+                                <td><strong onclick="showOrderDetails('${o._id || o.id}')" style="cursor:pointer;color:var(--primary);text-decoration:underline;">#${o._id || o.id}</strong></td>
                                 <td>${o.customerEmail}</td>
                                 <td>${o.items.length} item(s)</td>
                                 <td style="color:var(--gold);font-weight:700;">R$ ${o.total.toFixed(2)}</td>
                                 <td>${o.paymentMethod === 'card' ? 'Cartão' : o.paymentMethod === 'pix' ? 'PIX' : 'Boleto'}</td>
-                                <td><span class="badge badge-success status-badge">${o.status}</span></td>
+                                <td><span class="badge status-badge status-${o.status.toLowerCase()}">${o.status}</span></td>
                                 <td>${new Date(o.date).toLocaleString('pt-BR')}</td>
                                 <td>
                                     <button class="btn btn-edit btn-sm btn-status" onclick="openStatusModal('${o._id || o.id}', '${o.status}')">
@@ -530,6 +528,41 @@ async function confirmBulkDeleteOrders() {
     } catch (err) {
         Swal.fire("Erro", err.message, "error");
     }
+}
+
+function showOrderDetails(orderId) {
+    const order = ordersCache.find(o => (o._id || o.id) == orderId);
+    if (!order) return;
+
+    const modal = document.createElement("div");
+    modal.className = "admin-modal show";
+    modal.id = "orderDetailsModal";
+    modal.innerHTML = `
+        <div class="admin-modal-content" style="max-width:600px">
+            <h2><i class="fas fa-file-invoice"></i> Detalhes do Pedido #${orderId.slice(-6)}</h2>
+            <div style="margin:1.5rem 0; text-align:left; color:var(--text)">
+                <p><strong>Cliente:</strong> ${order.customerEmail}</p>
+                <p><strong>Data:</strong> ${new Date(order.date).toLocaleString('pt-BR')}</p>
+                <p><strong>Status:</strong> ${order.status}</p>
+                <p><strong>Método:</strong> ${order.paymentMethod}</p>
+                <hr style="margin:1rem 0; border:0; border-top:1px solid var(--border)">
+                <h4>Itens do Pedido:</h4>
+                <div style="margin-top:0.5rem">
+                    ${order.items.map(item => `
+                        <div style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid var(--border-light)">
+                            <span>${item.name} x${item.qty}</span>
+                            <span>R$ ${(item.price * item.qty).toFixed(2)}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="text-align:right; margin-top:1rem; font-size:1.2rem;">
+                    <strong>Total: R$ ${order.total.toFixed(2)}</strong>
+                </div>
+            </div>
+            <button class="btn btn-save" onclick="this.closest('.admin-modal').remove()">Fechar</button>
+        </div>
+    `;
+    document.body.appendChild(modal);
 }
 
 function openStatusModal(orderId, currentStatus) {

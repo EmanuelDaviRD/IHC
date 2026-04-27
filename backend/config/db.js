@@ -2,14 +2,13 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
     try {
-        const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/edclaudia_store', {
-            // Mongoose 6+ não precisa dessas opções
-        });
+        if (!process.env.MONGODB_URI) throw new Error("MONGODB_URI não definida no .env");
+        
+        const conn = await mongoose.connect(process.env.MONGODB_URI);
         console.log(`✅ MongoDB conectado: ${conn.connection.host}`);
         return conn;
     } catch (error) {
-        console.error(`❌ Erro MongoDB: ${error.message}`);
-        // Fallback para JSON se MongoDB não disponível
+        console.error(`❌ Erro de Conexão MongoDB: ${error.message}`);
         console.log('⚠️  Usando fallback JSON...');
         return null;
     }

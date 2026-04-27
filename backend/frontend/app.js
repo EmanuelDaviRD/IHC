@@ -1,10 +1,11 @@
-const API_URL = "http://localhost:3000";
+const API_URL = window.location.origin;
 
 let AppState = {
     products: [], cart: [], favorites: [],
     coupons: [{ code: "BEMVINDO10", discount: 0.10 }, { code: "VIP20", discount: 0.20 }],
     appliedCoupon: null, currentUser: null, token: null,
-    activeCategory: "all", searchTerm: "", sortType: "", minPrice: 0, maxPrice: 1000
+    activeCategory: "all", searchTerm: "", sortType: "", minPrice: 0, maxPrice: 1000,
+    filtersOpen: false
 };
 
 const formatMoney = v => `R$ ${v.toFixed(2).replace('.', ',')}`;
@@ -35,12 +36,23 @@ function updateFavBadge() {
 }
 
 async function loadProducts() {
+    const app = document.getElementById("app");
+    if (app) app.innerHTML = `<div class="skeleton-grid">
+        ${'<div class="skeleton-card"></div>'.repeat(4)}
+    </div>`;
+
     try {
         const res = await fetch(`${API_URL}/produtos`);
+        if (!res.ok) throw new Error();
         AppState.products = await res.json();
         renderCatalog();
     } catch {
-        Swal.fire({ title: "Erro", text: "Não foi possível carregar produtos", icon: "error", confirmButtonColor: "#C9A96E" });
+        if (app) app.innerHTML = `
+            <div style="text-align:center;padding:4rem;color:var(--text-muted)">
+                <i class="fas fa-exclamation-circle" style="font-size:3rem;margin-bottom:1rem"></i>
+                <h3>Ops! Erro ao carregar vitrine</h3>
+                <button onclick="loadProducts()" class="btn-secondary" style="width:auto;margin-top:1rem">Tentar novamente</button>
+            </div>`;
     }
 }
 
@@ -64,36 +76,55 @@ function renderCatalog() {
 
     const app = document.getElementById("app");
     if (!app) return;
-    app.innerHTML = `
-        <div class="filters-bar">
-            <div class="filter-group"><label>Min:</label><input type="number" id="minP" value="${AppState.minPrice}"></div>
-            <div class="filter-group"><label>Max:</label><input type="number" id="maxP" value="${AppState.maxPrice}"></div>
-            <div class="filter-group"><label>Ordenar:</label>
-                <select id="sortS"><option value="">Relevância</option>
-                <option value="price_asc" ${AppState.sortType==="price_asc"?"selected":""}>Menor preço</option>
-                <option value="price_desc" ${AppState.sortType==="price_desc"?"selected":""}>Maior preço</option>
-                <option value="sales" ${AppState.sortType==="sales"?"selected":""}>Mais vendidos</option></select>
-            </div>
-            <div class="filter-group"><span>${f.length} produto${f.length!==1?'s':''}</span></div>
-        </div>
-        <div class="products-grid" id="productsGrid"></div>`;
 
-    document.getElementById("minP").onchange = e => { AppState.minPrice = +e.target.value; renderCatalog(); };
-    document.getElementById("maxP").onchange = e => { AppState.maxPrice = +e.target.value; renderCatalog(); };
-    document.getElementById("sortS").onchange = e => { AppState.sortType = e.target.value; renderCatalog(); };
+    if (!document.getElementById("filtersBar")) {
+        app.innerHTML = `<div id="filtersBar" class="filters-bar"></div><div id="productsGrid" class="products-grid"></div>`;
+    }
+
+    const filtersBar = document.getElementById("filtersBar");
+    if (filtersBar) {
+        filtersBar.style.display = AppState.filtersOpen ? 'flex' : 'none';
+        filtersBar.innerHTML = `
+            <div class="filter-group"><label>Min:</label><input type="number" id="minP" value="${AppState.minPrice}" style="width:70px"></div>
+            <div class="filter-group"><label>Max:</label><input type="number" id="maxP" value="${AppState.maxPrice}" style="width:70px"></div>
+            <div class="filter-group">
+                <select id="sortS">
+                    <option value="">Ordenar por...</option>
+                    <option value="price_asc" ${AppState.sortType==="price_asc"?"selected":""}>Menor preço</option>
+                    <option value="price_desc" ${AppState.sortType==="price_desc"?"selected":""}>Maior preço</option>
+                    <option value="sales" ${AppState.sortType==="sales"?"selected":""}>Mais vendidos</option>
+                </select>
+            </div>
+            <div class="filter-group"><span style="font-size:0.8rem">${f.length} itens</span></div>
+        `;
+    }
+
+    if (AppState.filtersOpen) {
+        document.getElementById("minP")?.addEventListener("change", e => { AppState.minPrice = +e.target.value; renderCatalog(); });
+        document.getElementById("maxP")?.addEventListener("change", e => { AppState.maxPrice = +e.target.value; renderCatalog(); });
+        document.getElementById("sortS")?.addEventListener("change", e => { AppState.sortType = e.target.value; renderCatalog(); });
+    }
 
     const g = document.getElementById("productsGrid");
-    if (!f.length) { g.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-muted);grid-column:1/-1"><h3>Nenhum produto encontrado</h3></div>'; return; }
+    if (!g) return;
+
+    if (!f.length) {
+        g.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-muted);grid-column:1/-1"><h3>Nenhum produto encontrado</h3></div>';
+        return;
+    }
 
     g.innerHTML = f.map(p => {
         const pid = p.id || p._id;
-        const isFav = AppState.favorites.includes(String(pid));
+        const isFav = AppState.favorites.some(favId => String(favId) === String(pid));
+        const stockWarning = p.stock > 0 && p.stock < 10 ? `<div class="stock-warning">Restam apenas ${p.stock} unids!</div>` : '';
+        
         return `<div class="product-card" data-id="${pid}">${getBadge(p)}
             <div class="product-img-wrapper">
                 <img src="${p.image}" class="product-img" alt="${p.name}" loading="lazy">
             </div>
             <div class="product-info"><div class="product-category">${p.category}</div>
             <div class="product-title">${p.name}</div>
+            ${stockWarning}
             <div class="product-price">${formatMoney(p.price)}</div>
             <div class="product-actions">
                 <button class="btn-cart" data-id="${pid}"><i class="fas fa-cart-plus"></i> Adicionar</button>
@@ -115,7 +146,9 @@ window.addToCart = function(id) {
 };
 
 window.toggleFavorite = function(id) {
-    const sid = String(id), idx = AppState.favorites.indexOf(sid);
+    const sid = String(id);
+    const idx = AppState.favorites.findIndex(favId => String(favId) === sid);
+    
     if (idx > -1) AppState.favorites.splice(idx, 1); else AppState.favorites.push(sid);
     saveLocalCartFavs(); updateFavBadge(); renderCatalog();
 };
@@ -125,14 +158,51 @@ function showProductModal(id) {
     if (!p) return;
     const d = document.getElementById("productDetail");
     if (!d) return;
-    d.innerHTML = `<h2>${p.name}</h2><div class="product-category">${p.category}</div>
+
+    const isFav = AppState.favorites.some(favId => String(favId) === String(id));
+    const desc = p.description || "Sem descrição.";
+
+    const related = AppState.products
+        .filter(item => item.category === p.category && String(item.id || item._id) !== String(id))
+        .slice(0, 3);
+
+    d.innerHTML = `
+        <h2>${p.name}</h2>
+        <div class="product-category">${p.category}</div>
         <img src="${p.image}" style="width:100%;border-radius:1rem;margin:1rem 0" alt="${p.name}">
-        <p style="color:var(--text-light);line-height:1.7">${p.description||"Sem descrição."}</p>
+
+        <div class="product-info-menu">
+            <div class="menu-section active">
+                <button class="menu-header" onclick="this.parentElement.classList.toggle('active')">
+                    <span><i class="fas fa-info-circle"></i> Descrição</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="menu-content">
+                    <p style="color:var(--text-light);line-height:1.7">${desc}</p>
+                </div>
+            </div>
+        </div>
+
         <div class="product-price" style="font-size:1.8rem;margin:1rem 0">${formatMoney(p.price)}</div>
         <div style="display:flex;gap:1rem;margin-top:1rem">
-            <button class="btn-primary" id="mAdd" style="flex:1"><i class="fas fa-cart-plus"></i> Adicionar</button>
-            <button class="btn-fav ${AppState.favorites.includes(String(id))?'active':''}" id="mFav" style="width:50px;height:50px"><i class="fas fa-heart"></i></button>
-        </div>`;
+            <button class="btn-primary" id="mAdd" style="flex:1"><i class="fas fa-cart-plus"></i> Adicionar ao Carrinho</button>
+            <button class="btn-fav ${isFav?'active':''}" id="mFav" style="width:50px;height:50px;border-radius:50%"><i class="fas fa-heart"></i></button>
+        </div>
+
+        ${related.length > 0 ? `
+        <div class="related-section">
+            <h4 style="margin-bottom:1rem">Você também pode gostar:</h4>
+            <div class="related-grid">
+                ${related.map(r => `
+                    <div class="related-item" onclick="showProductModal('${r.id || r._id}')">
+                        <img src="${r.image}">
+                        <div style="font-weight:600">${r.name.substring(0, 15)}...</div>
+                        <div style="color:var(--primary)">${formatMoney(r.price)}</div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>` : ''}`;
+
     document.getElementById("mAdd").onclick = () => addToCart(id);
     document.getElementById("mFav").onclick = () => toggleFavorite(id);
     openModal("productModal");
@@ -157,11 +227,13 @@ function renderCartModal() {
                 <div>
                     <div style="font-weight:600">${item.name}</div>
                     <div style="font-size:0.85rem;color:var(--text-light)">${formatMoney(item.price)} x ${item.qty}</div>
+                </div>
             </div>
             <div style="display:flex;align-items:center;gap:0.5rem">
                 <strong style="color:var(--primary-dark)">${formatMoney(item.price * item.qty)}</strong>
                 <button onclick="removeFromCart('${item.id||item._id}')" style="background:var(--accent);border:none;color:white;border-radius:50%;width:28px;height:28px;cursor:pointer"><i class="fas fa-times" style="font-size:0.7rem"></i></button>
-            </div>`).join('');
+            </div>
+        </div>`).join('');
 
     const sub = getCartTotal(), disc = getDiscount(), fin = getFinalTotal();
     let html = '';
@@ -178,11 +250,45 @@ window.removeFromCart = id => {
     saveLocalCartFavs(); updateCartBadge(); renderCartModal();
 };
 
-window.checkoutWhatsApp = () => {
+window.checkoutWhatsApp = async () => {
     if (!AppState.cart.length) {
         Swal.fire({ title: "Carrinho vazio", icon: "warning", confirmButtonColor: "#C9A96E" });
         return;
     }
+
+    if (!AppState.currentUser) {
+        Swal.fire({ title: "Atenção", text: "Você precisa estar logado para finalizar o pedido.", icon: "info", confirmButtonColor: "#C9A96E" });
+        openModal("authModal");
+        return;
+    }
+
+    try {
+        const orderBody = {
+            items: AppState.cart.map(i => ({ id: i.id || i._id, name: i.name, price: i.price, qty: i.qty, image: i.image })),
+            total: getFinalTotal(),
+            address: "WhatsApp Checkout",
+            paymentMethod: "whatsapp"
+        };
+
+        Swal.fire({ title: "Processando...", didOpen: () => Swal.showLoading(), allowOutsideClick: false });
+
+        const res = await fetch(`${API_URL}/pedidos`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${AppState.token}` },
+            body: JSON.stringify(orderBody)
+        });
+
+        if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.error || "Erro ao registrar pedido");
+        }
+        
+        Swal.close();
+    } catch (err) {
+        Swal.fire({ title: "Erro no Checkout", text: err.message, icon: "error", confirmButtonColor: "#C9A96E" });
+        return;
+    }
+
     let msg = "*🛍️ Pedido Edcláudia Ribeiro*%0A%0A";
     AppState.cart.forEach(i => {
         msg += `• ${i.name} x${i.qty} = ${formatMoney(i.price*i.qty)}%0A`;
@@ -193,12 +299,16 @@ window.checkoutWhatsApp = () => {
     if (disc > 0) msg += `*Desconto:* -${formatMoney(disc)}%0A`;
     msg += `*TOTAL:* ${formatMoney(fin)}%0A`;
     msg += `─────────────────%0A%0A`;
+    msg += `*Cliente:* ${AppState.currentUser.name}%0A`;
+    msg += `*Email:* ${AppState.currentUser.email}%0A%0A`;
     msg += `Olá! Gostaria de finalizar meu pedido. 😊`;
+
+    AppState.cart = []; saveLocalCartFavs(); updateCartBadge();
     window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
 };
 
 function renderFavoritesModal() {
-    const favs = AppState.products.filter(p => AppState.favorites.includes(String(p.id||p._id)));
+    const favs = AppState.products.filter(p => AppState.favorites.some(favId => String(favId) === String(p.id||p._id)));
     const el = document.getElementById("favoritesList");
     if (!el) return;
     if (!favs.length) { el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-heart" style="font-size:3rem;display:block;opacity:0.3;margin-bottom:1rem"></i><p>Sem favoritos</p></div>'; return; }
@@ -209,6 +319,7 @@ function renderFavoritesModal() {
                 <div>
                     <div style="font-weight:600;font-size:0.9rem">${p.name}</div>
                     <div style="color:var(--primary-dark);font-weight:700">${formatMoney(p.price)}</div>
+                </div>
             </div>
             <button onclick="addToCart('${p.id||p._id}')" class="btn-primary" style="width:auto;padding:0.5rem 1rem;font-size:0.8rem"><i class="fas fa-cart-plus"></i></button>
         </div>`).join('');
@@ -273,18 +384,30 @@ function openModal(id) { const m = document.getElementById(id); if (m) { m.style
 function closeModal(id) { const m = document.getElementById(id); if (m) { m.style.display = "none"; document.body.style.overflow = ""; } }
 
 function bindAllEvents() {
+    const filterToggle = document.getElementById("filterToggle");
+    if (filterToggle) {
+        filterToggle.onclick = (e) => {
+            e.preventDefault();
+            AppState.filtersOpen = !AppState.filtersOpen;
+            const icon = filterToggle.querySelector('i');
+            if (icon) icon.className = AppState.filtersOpen ? 'fas fa-times' : 'fas fa-sliders-h';
+            renderCatalog();
+        };
+    }
+
     const loginBtn = document.getElementById("loginBtn");
-    if (loginBtn) loginBtn.onclick = () => openModal("authModal");
+    if (loginBtn) loginBtn.onclick = (e) => { e.preventDefault(); openModal("authModal"); };
 
     const registerBtn = document.getElementById("registerBtn");
-    if (registerBtn) registerBtn.onclick = () => {
+    if (registerBtn) registerBtn.onclick = (e) => {
+        e.preventDefault();
         const tabRegister = document.querySelector('[data-tab="register"]');
         if (tabRegister) tabRegister.click();
         openModal("authModal");
     };
 
     const logoutBtn = document.getElementById("logoutBtn");
-    if (logoutBtn) logoutBtn.onclick = () => logout();
+    if (logoutBtn) logoutBtn.onclick = (e) => { e.preventDefault(); logout(); };
 
     const cartIcon = document.getElementById("cartIcon");
     if (cartIcon) cartIcon.onclick = () => { openModal("cartModal"); renderCartModal(); };
@@ -307,7 +430,7 @@ function bindAllEvents() {
         if (dd && um && !um.contains(e.target)) dd.classList.remove("show");
     });
 
-    document.getElementById("themeToggle").onclick = () => document.body.classList.toggle("dark");
+    document.getElementById("themeToggle")?.addEventListener("click", () => document.body.classList.toggle("dark"));
     document.getElementById("chatFab").onclick = () => openModal("chatModal");
     document.getElementById("sendChatBtn").onclick = () => {
         const inp = document.getElementById("chatInput");
@@ -322,7 +445,8 @@ function bindAllEvents() {
 
     document.getElementById("profileLink").onclick = (e) => { e.preventDefault(); showProfile(); };
     document.getElementById("ordersLink").onclick = (e) => { e.preventDefault(); showOrderHistory(); };
-    document.getElementById("adminPanelLink").onclick = () => {
+    document.getElementById("adminPanelLink").onclick = (e) => {
+        e.preventDefault();
         if (AppState.currentUser?.role === "admin") window.location.href = "/admin";
         else Swal.fire({ title: "Acesso negado", icon: "error", confirmButtonColor: "#C9A96E" });
     };
@@ -340,8 +464,14 @@ function bindAllEvents() {
     document.querySelectorAll(".tab-btn").forEach(b => b.onclick = () => {
         document.querySelectorAll(".tab-btn").forEach(x => x.classList.remove("active"));
         b.classList.add("active");
-        document.getElementById("loginForm").style.display = b.dataset.tab === "login" ? "block" : "none";
-        document.getElementById("registerForm").style.display = b.dataset.tab === "register" ? "block" : "none";
+        const isLogin = b.dataset.tab === "login";
+        const targetForm = document.getElementById(isLogin ? "loginForm" : "registerForm");
+        const otherForm = document.getElementById(isLogin ? "registerForm" : "loginForm");
+        
+        otherForm.style.display = "none";
+        targetForm.style.display = "block";
+        targetForm.classList.add("fade-in");
+        setTimeout(() => targetForm.classList.remove("fade-in"), 500);
     });
 
     document.querySelectorAll(".cat-link").forEach(l => l.onclick = (e) => {
@@ -365,8 +495,12 @@ function bindAllEvents() {
         if (cupom) {
             AppState.appliedCoupon = cupom;
             renderCartModal();
+            applyCoupon.classList.add("pulse-gold");
             Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
-        } else Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        } else {
+            applyCoupon.classList.remove("pulse-gold");
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        }
     };
 }
 
@@ -384,6 +518,12 @@ function showProfile() {
         </div>`;
     openModal("profileModal");
 }
+
+window.reopenWhatsApp = (orderId) => {
+    const order = AppState.products.find(o => String(o.id || o._id) === String(orderId));
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}`);
+    window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
+};
 
 async function showOrderHistory() {
     if (!AppState.currentUser) return;
@@ -404,16 +544,22 @@ async function showOrderHistory() {
                     <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.3rem">${o.items.length} item(s)</div>
                     <div style="display:flex;justify-content:space-between;align-items:center">
                         <span style="font-weight:700">${formatMoney(o.total)}</span>
-                        <span style="padding:0.2rem 0.6rem;border-radius:20px;font-size:0.75rem;font-weight:600;background:${o.status==='Aprovado'?'rgba(78,205,196,0.2)':'var(--primary)'};color:${o.status==='Aprovado'?'var(--success)':'var(--secondary)'}">${o.status}</span>
-                    </div>`).join('');
+                        <button onclick="reopenWhatsApp('${o.id || o._id}')" class="btn-cart" style="width:auto;padding:0.3rem 0.8rem;font-size:0.7rem;background:linear-gradient(135deg,#25D366,#128C7E)">
+                            <i class="fab fa-whatsapp"></i> Contato
+                        </button>
+                    </div>
+                </div>`).join('');
         }
         openModal("historyModal");
     } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+    // Forçar tema escuro como padrão solicitado
+    document.body.classList.add("dark");
+    
+    bindAllEvents(); // Bind imediato para os botões fixos funcionarem
     loadLocalCartFavs();
     checkAuthToken();
     await loadProducts();
-    bindAllEvents();
 });
