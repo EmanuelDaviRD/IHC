@@ -55,6 +55,17 @@
       "image": "https://picsum.photos/id/29/300/200",
       "description": "Creme facial rejuvenescedor.",
       "sales": 6
+    },
+    {
+      "id": 1777254920867,
+      "name": "teste",
+      "price": 10,
+      "category": "Natura",
+      "stock": 2,
+      "image": "https://picsum.photos/id/100/300/200",
+      "description": "",
+      "sales": 0,
+      "badge": ""
     }
   ],
   "orders": []

@@ -84,25 +84,24 @@ function renderCatalog() {
     const filtersBar = document.getElementById("filtersBar");
     if (filtersBar) {
         filtersBar.style.display = AppState.filtersOpen ? 'flex' : 'none';
-        filtersBar.innerHTML = `
-            <div class="filter-group"><label>Min:</label><input type="number" id="minP" value="${AppState.minPrice}" style="width:70px"></div>
-            <div class="filter-group"><label>Max:</label><input type="number" id="maxP" value="${AppState.maxPrice}" style="width:70px"></div>
-            <div class="filter-group">
-                <select id="sortS">
-                    <option value="">Ordenar por...</option>
-                    <option value="price_asc" ${AppState.sortType==="price_asc"?"selected":""}>Menor preço</option>
-                    <option value="price_desc" ${AppState.sortType==="price_desc"?"selected":""}>Maior preço</option>
-                    <option value="sales" ${AppState.sortType==="sales"?"selected":""}>Mais vendidos</option>
-                </select>
-            </div>
-            <div class="filter-group"><span style="font-size:0.8rem">${f.length} itens</span></div>
-        `;
-    }
-
-    if (AppState.filtersOpen) {
-        document.getElementById("minP")?.addEventListener("change", e => { AppState.minPrice = +e.target.value; renderCatalog(); });
-        document.getElementById("maxP")?.addEventListener("change", e => { AppState.maxPrice = +e.target.value; renderCatalog(); });
-        document.getElementById("sortS")?.addEventListener("change", e => { AppState.sortType = e.target.value; renderCatalog(); });
+        if (AppState.filtersOpen && !filtersBar.innerHTML) {
+            filtersBar.innerHTML = `
+                <div class="filter-group"><label>Min:</label><input type="number" id="minP" value="${AppState.minPrice}" style="width:70px"></div>
+                <div class="filter-group"><label>Max:</label><input type="number" id="maxP" value="${AppState.maxPrice}" style="width:70px"></div>
+                <div class="filter-group">
+                    <select id="sortS">
+                        <option value="">Ordenar por...</option>
+                        <option value="price_asc">Menor preço</option>
+                        <option value="price_desc">Maior preço</option>
+                        <option value="sales">Mais vendidos</option>
+                    </select>
+                </div>`;
+            setupFilterListeners();
+        }
+        const countEl = filtersBar.querySelector('.item-count') || document.createElement('div');
+        countEl.className = 'filter-group item-count';
+        countEl.innerHTML = `<span style="font-size:0.8rem">${f.length} itens</span>`;
+        if (!filtersBar.querySelector('.item-count')) filtersBar.appendChild(countEl);
     }
 
     const g = document.getElementById("productsGrid");
@@ -135,6 +134,12 @@ function renderCatalog() {
     document.querySelectorAll(".btn-cart").forEach(b => b.onclick = e => { e.stopPropagation(); addToCart(b.dataset.id); });
     document.querySelectorAll(".btn-fav").forEach(b => b.onclick = e => { e.stopPropagation(); toggleFavorite(b.dataset.id); });
     document.querySelectorAll(".product-card").forEach(c => c.onclick = () => showProductModal(c.dataset.id));
+}
+
+function setupFilterListeners() {
+    document.getElementById("minP")?.addEventListener("change", e => { AppState.minPrice = +e.target.value; renderCatalog(); });
+    document.getElementById("maxP")?.addEventListener("change", e => { AppState.maxPrice = +e.target.value; renderCatalog(); });
+    document.getElementById("sortS")?.addEventListener("change", e => { AppState.sortType = e.target.value; renderCatalog(); });
 }
 
 window.addToCart = function(id) {

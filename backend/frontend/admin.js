@@ -358,6 +358,7 @@ async function saveProduct(id) {
 
         if (!res.ok) throw new Error("Erro ao salvar");
         productsCache = [];
+        ordersCache = []; // Limpa caches para forçar atualização
         closeModal();
         Swal.fire("Sucesso!", `Produto ${id && id !== 'null' ? 'atualizado' : 'criado'} com sucesso.`, "success");
         loadProductsPage();
