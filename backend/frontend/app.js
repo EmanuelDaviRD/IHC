@@ -229,32 +229,42 @@ function renderCartModal() {
     }
 
     el.innerHTML = `
-        <div class="luxury-checkout">
-            <h3 class="luxury-header">Finalizar Pedido</h3>
+        <div class="luxury-checkout-flow">
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 4px; font-size: 0.9rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
+                <div style="width:30px; height:1px; background:var(--bronze); margin: 10px auto; opacity:0.3;"></div>
+                <h2 style="font-family:'Playfair Display'; font-size: 2rem; color: #FFF; margin-top: 0.5rem;">Meu Carrinho</h2>
+            </div>
+
+            <!-- Form Section -->
             <div class="luxury-form">
-                <div class="luxury-input-group">
-                    <label>Nome Completo</label>
-                    <input type="text" id="checkName" value="${AppState.currentUser?.name || ''}" placeholder="Seu nome">
+                <div class="luxury-input-group" style="margin-bottom: 1.5rem;">
+                    <label style="color: var(--bronze); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; display: block; font-family: 'Inter', sans-serif;">Nome Completo</label>
+                    <input type="text" id="checkName" class="luxury-input" style="width:100%" value="${AppState.currentUser?.name || ''}" placeholder="Ex: Emanuel Davi Ribeiro">
                 </div>
                 <div class="luxury-input-group">
-                    <label>Endereço de Entrega</label>
-                    <input type="text" id="checkAddress" placeholder="Rua, Número, Bairro">
+                    <label style="color: var(--bronze); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; display: block; font-family: 'Inter', sans-serif;">Endereço de Entrega</label>
+                    <input type="text" id="checkAddress" class="luxury-input" style="width:100%" placeholder="Rua, Número, Bairro e Cidade">
                 </div>
             </div>
+
+            <!-- Items Summary -->
             <div class="luxury-order-summary">
                 ${AppState.cart.map(item => `
-                    <div class="luxury-cart-item">
-                        <img src="${item.image}" alt="${item.name}">
-                        <div class="item-details">
-                            <span class="item-name">${item.name}</span>
-                            <span class="item-qty">${item.qty}x ${formatMoney(item.price)}</span>
+                    <div class="luxury-cart-item-card">
+                        <img src="${item.image}" alt="${item.name}" style="width:75px; height:75px; object-fit:cover; border-radius:4px; border: 1px solid rgba(201, 169, 110, 0.2);">
+                        <div style="flex:1;">
+                            <div style="font-family:'Playfair Display'; font-size: 1.1rem; color:#FFF; margin-bottom: 5px;">${item.name}</div>
+                            <div style="color:var(--text-muted); font-size: 0.8rem;">${item.qty} unid. &times; ${formatMoney(item.price)}</div>
                         </div>
-                        <div class="item-price-total">
-                            ${formatMoney(item.price * item.qty)}
-                            <button onclick="removeFromCart('${item.id||item._id}')" class="btn-remove-luxury">&times;</button>
+                        <div style="text-align:right;">
+                            <div style="font-weight:700; color:var(--bronze); margin-bottom: 10px;">${formatMoney(item.price * item.qty)}</div>
+                            <button onclick="removeFromCart('${item.id||item._id}')" style="background:none; border:none; color:#FFF; opacity:0.3; cursor:pointer; transition:0.3s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.3">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
                         </div>
-                    </div>
-                `).join('')}
+                    </div>`).join('')}
             </div>
         </div>
     `;
@@ -270,8 +280,8 @@ function renderCartModal() {
     
     const checkoutBtn = document.querySelector('.btn-primary[onclick*="checkoutWhatsApp"]');
     if (checkoutBtn) {
-        checkoutBtn.className = 'btn-primary btn-metallic';
-        checkoutBtn.innerHTML = '<i class="fab fa-whatsapp"></i> FINALIZAR NO WHATSAPP';
+        checkoutBtn.className = 'btn-metallic';
+        checkoutBtn.innerHTML = '<i class="fab fa-whatsapp" style="margin-right:10px"></i> FINALIZAR PEDIDO VIA WHATSAPP';
     }
 }
 
@@ -559,14 +569,18 @@ function showProfile() {
     const d = document.getElementById("profileInfo");
     if (d) d.innerHTML = `
         <div style="text-align:center; padding:1rem">
-            <div class="er-logo-mark">ER</div>
-            <h2 style="font-family:'Playfair Display'; color:var(--bronze); font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
-            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2rem">Olá, ${AppState.currentUser.name}!</p>
-            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
-                <p style="font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; color:var(--bronze)">Sessão Ativa</p>
-                <p style="font-weight:600; color:white">${AppState.currentUser.email}</p>
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.2rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 3px; font-size: 0.7rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
             </div>
-            <button class="btn-primary btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem">OK</button>
+            <i class="fas fa-check-circle bronze-check"></i>
+            <h2 style="font-family:'Playfair Display'; color:#FFF; font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2.5rem; font-style: italic;">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--bronze); margin-bottom: 5px;">Sessão Ativa</p>
+                <p style="font-weight:400; color:white; font-family:'Inter'">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem 4rem; width: auto;">OK</button>
         </div>`;
     openModal("profileModal");
 }
