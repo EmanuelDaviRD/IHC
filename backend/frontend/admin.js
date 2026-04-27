@@ -271,9 +271,12 @@ function openProductModal(product = null) {
                     <div><label>Nome</label><input type="text" id="prodName" value="${product?.name || ''}" placeholder="Nome do produto"></div>
                     <div><label>Categoria</label>
                         <select id="prodCategory">
+                            <option value="Novidades" ${product?.category === 'Novidades' ? 'selected' : ''}>Novidades ✨</option>
                             <option value="Natura" ${product?.category === 'Natura' ? 'selected' : ''}>Natura</option>
                             <option value="O Boticário" ${product?.category === 'O Boticário' ? 'selected' : ''}>O Boticário</option>
                             <option value="Avon" ${product?.category === 'Avon' ? 'selected' : ''}>Avon</option>
+                            <option value="Kits" ${product?.category === 'Kits' ? 'selected' : ''}>Kits & Presentes 🎁</option>
+                            <option value="Acessórios" ${product?.category === 'Acessórios' ? 'selected' : ''}>Acessórios</option>
                             <option value="Outros" ${product?.category === 'Outros' ? 'selected' : ''}>Outros</option>
                         </select>
                     </div>
@@ -806,17 +809,44 @@ function loadSettingsPage() {
             <p style="color:var(--text-dim);margin-bottom:1rem;">Altere a senha de administrador.</p>
             <div class="admin-form" style="max-width:500px;">
                 <label>Senha Atual</label>
-                <input type="password" placeholder="••••••••">
+                <input type="password" id="currentPass" placeholder="••••••••">
                 <label>Nova Senha</label>
-                <input type="password" placeholder="Nova senha">
+                <input type="password" id="newPass" placeholder="Nova senha">
                 <label>Confirmar Nova Senha</label>
-                <input type="password" placeholder="Confirmar senha">
-                <button class="btn btn-save" style="margin-top:1rem;">
+                <input type="password" id="confirmPass" placeholder="Confirmar senha">
+                <button class="btn btn-save" onclick="changeAdminPassword()" style="margin-top:1rem;">
                     <i class="fas fa-key"></i> Alterar Senha
                 </button>
             </div>
         </div>
     `;
+}
+
+async function changeAdminPassword() {
+    const currentPassword = document.getElementById("currentPass").value;
+    const newPassword = document.getElementById("newPass").value;
+    const confirmPassword = document.getElementById("confirmPass").value;
+
+    if (!currentPassword || !newPassword) return Swal.fire("Erro", "Preencha os campos de senha", "error");
+    if (newPassword !== confirmPassword) return Swal.fire("Erro", "A nova senha e a confirmação não coincidem", "error");
+
+    try {
+        const res = await fetchWithAuth(`${API_URL}/admin/change-password`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ currentPassword, newPassword })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Erro ao alterar senha");
+
+        Swal.fire("Sucesso!", "Senha alterada com sucesso!", "success");
+        document.getElementById("currentPass").value = "";
+        document.getElementById("newPass").value = "";
+        document.getElementById("confirmPass").value = "";
+    } catch (err) {
+        Swal.fire("Erro", err.message, "error");
+    }
 }
 
 function saveSettings() {

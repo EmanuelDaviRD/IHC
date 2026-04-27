@@ -235,45 +235,42 @@ function renderCartModal() {
     }
 
     el.innerHTML = `
-        <div class="luxury-checkout-flow">
-            <div class="er-logo-mark">
-                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
-                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 4px; font-size: 0.9rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
-                <div style="width:30px; height:1px; background:var(--bronze); margin: 10px auto; opacity:0.3;"></div>
-                <h2 style="font-family:'Playfair Display'; font-size: 2rem; color: #FFF; margin-top: 0.5rem;">Meu Carrinho</h2>
-            </div>
+            <div class="luxury-modal-header">
+            <div class="bag-icon-group"><i class="fas fa-shopping-bag"></i> Meu Carrinho</div>
+        </div>
+        
+        <div class="luxury-branding">
+            <i class="fas fa-crown gold-crown"></i>
+            <h2 class="luxury-brand-name">EDCLÁUDIA RIBEIRO</h2>
+        </div>
 
-            <!-- Form Section -->
-            <div class="luxury-form">
-                <div class="luxury-input-group" style="margin-bottom: 1.5rem;">
-                    <label style="color: var(--bronze); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; display: block; font-family: 'Inter', sans-serif;">Nome Completo</label>
-                    <input type="text" id="checkName" class="luxury-input" style="width:100%" value="${AppState.currentUser?.name || ''}" placeholder="Ex: Emanuel Davi Ribeiro">
-                </div>
-                <div class="luxury-input-group">
-                    <label style="color: var(--bronze); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; display: block; font-family: 'Inter', sans-serif;">Endereço de Entrega</label>
-                    <input type="text" id="checkAddress" class="luxury-input" style="width:100%" placeholder="Rua, Número, Bairro e Cidade">
-                </div>
+        <div class="luxury-checkout-form" style="display: grid; gap: 1rem; margin-bottom: 2rem;">
+            <div class="luxury-input-group">
+                <input type="text" id="checkName" class="luxury-field" style="width:100%" value="${AppState.currentUser?.name || ''}" placeholder="NOME COMPLETO">
             </div>
-
-            <!-- Items Summary -->
-            <div class="luxury-order-summary">
-                ${AppState.cart.map(item => `
-                    <div class="luxury-cart-item-card">
-                        <img src="${item.image}" alt="${item.name}" style="width:75px; height:75px; object-fit:cover; border-radius:4px; border: 1px solid rgba(201, 169, 110, 0.2);">
-                        <div style="flex:1;">
-                            <div style="font-family:'Playfair Display'; font-size: 1.1rem; color:#FFF; margin-bottom: 5px;">${item.name}</div>
-                            <div style="color:var(--text-muted); font-size: 0.8rem;">${item.qty} unid. &times; ${formatMoney(item.price)}</div>
-                        </div>
-                        <div style="text-align:right;">
-                            <div style="font-weight:700; color:var(--bronze); margin-bottom: 10px;">${formatMoney(item.price * item.qty)}</div>
-                            <button onclick="removeFromCart('${item.id||item._id}')" style="background:none; border:none; color:#FFF; opacity:0.3; cursor:pointer; transition:0.3s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.3">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </div>
-                    </div>`).join('')}
+            <div class="luxury-input-group">
+                <input type="text" id="checkAddress" class="luxury-field" style="width:100%" placeholder="ENDEREÇO DE ENTREGA">
             </div>
         </div>
-    `;
+
+        <div class="luxury-cart-grid">
+            ${AppState.cart.map(item => `
+                <div class="luxury-cart-item-new">
+                    <div class="gold-frame">
+                        <img src="${item.image}" alt="${item.name}">
+                    </div>
+                    <div class="item-info">
+                        <div style="font-family:'Inter', sans-serif; font-weight:700; color:#FFF; font-size:1rem; text-transform:uppercase; margin-bottom:4px;">${item.name}</div>
+                        <div style="font-family:'Playfair Display', serif; color:var(--bronze); font-size:0.9rem;">${item.qty}x ${formatMoney(item.price)}</div>
+                    </div>
+                    <div style="text-align:right">
+                        <div style="font-family:'Inter', sans-serif; color:var(--text-muted); font-size:0.8rem; margin-bottom:8px;">Subtotal: ${formatMoney(item.price * item.qty)}</div>
+                        <button onclick="removeFromCart('${item.id||item._id}')" class="btn-trash-minimal">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>`).join('')}
+        </div>`;
 
     const sub = getCartTotal(), disc = getDiscount(), fin = getFinalTotal();
     let html = '';
@@ -281,13 +278,13 @@ function renderCartModal() {
         html += `<div style="font-size:0.9rem;color:var(--text-muted);text-decoration:line-through">${formatMoney(sub)}</div>`;
         html += `<div style="font-size:0.85rem;color:var(--success);margin-bottom:0.3rem"><i class="fas fa-tag"></i> ${AppState.appliedCoupon.code}: -${formatMoney(disc)}</div>`;
     }
-    html += `<div style="font-size:1.8rem;color:var(--bronze);font-weight:800;font-family:'Playfair Display',serif">${formatMoney(fin)}</div>`;
-    document.getElementById("cartTotal").innerHTML = html;
     
+    document.getElementById("cartTotal").innerHTML = ''; // Limpamos pois o total vai para o botão
+
     const checkoutBtn = document.querySelector('.btn-primary[onclick*="checkoutWhatsApp"]');
     if (checkoutBtn) {
-        checkoutBtn.className = 'btn-metallic';
-        checkoutBtn.innerHTML = '<i class="fab fa-whatsapp" style="margin-right:10px"></i> FINALIZAR PEDIDO VIA WHATSAPP';
+        checkoutBtn.className = 'btn-checkout-premium';
+        checkoutBtn.innerHTML = `<i class="fab fa-whatsapp"></i> FINALIZAR PEDIDO VIA WHATSAPP • ${formatMoney(fin)}`;
     }
 }
 

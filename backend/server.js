@@ -190,6 +190,22 @@ app.put("/pedidos/:id/status", authenticate, isAdmin, async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+app.put("/admin/change-password", authenticate, isAdmin, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        if (!currentPassword || !newPassword) return res.status(400).json({ error: "Dados incompletos" });
+
+        const u = await User.findById(req.user.id);
+        if (!u || !(await bcrypt.compare(currentPassword, u.password))) {
+            return res.status(401).json({ error: "Senha atual incorreta" });
+        }
+
+        u.password = await bcrypt.hash(newPassword, 10);
+        await u.save();
+        res.json({ message: "Senha alterada com sucesso" });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 app.post("/upload", authenticate, isAdmin, upload.single("image"), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: "Nenhuma imagem enviada" });
