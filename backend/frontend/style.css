@@ -10,9 +10,13 @@
     --success: #4ECDC4;
     --gold: #D4AF37;
     --gold-light: #F4E4BC;
-    --dark: #0F0F1A;
-    --dark-card: #1A1A2E;
-    --dark-hover: #252540;
+    --dark: #08080C;
+    --dark-card: #0D0D15;
+    --dark-hover: #161625;
+    --charcoal: #12121A;
+    --bronze: #C9A96E;
+    --bronze-dark: #A0824D;
+    --bronze-glow: rgba(201, 169, 110, 0.4);
     --light-bg: #F8F6F1;
     --card-bg: #FFFFFF;
     --text: #2C2C3A;
@@ -43,6 +47,62 @@
     --border: #1A1A2E; /* Bordas muito sutis */
     --shadow: 0 4px 20px rgba(0,0,0,0.3);
     --shadow-lg: 0 12px 40px rgba(0,0,0,0.4);
+    --shadow-bronze: 0 0 25px rgba(201, 169, 110, 0.15);
+}
+
+/* Luxury UI Components */
+.luxury-modal {
+    background-image: radial-gradient(circle at 2px 2px, rgba(201, 169, 110, 0.05) 1px, transparent 0);
+    background-size: 32px 32px;
+    border: 1px solid rgba(201, 169, 110, 0.3) !important;
+    box-shadow: var(--shadow-bronze), 0 20px 50px rgba(0,0,0,0.8) !important;
+}
+
+.btn-metallic {
+    background: linear-gradient(145deg, var(--bronze-dark), var(--bronze), var(--bronze-dark)) !important;
+    color: #0D0D15 !important;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 800 !important;
+    border: none;
+    box-shadow: 0 4px 15px rgba(201, 169, 110, 0.3), inset 0 1px 1px rgba(255,255,255,0.4) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-metallic::after {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent);
+    transform: rotate(45deg);
+    animation: metallicShine 4s infinite;
+}
+
+@keyframes metallicShine {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+.er-logo-mark {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.5rem;
+    color: var(--bronze);
+    text-shadow: 0 0 20px rgba(201, 169, 110, 0.4);
+    margin-bottom: 0.5rem;
+}
+
+.luxury-checkout .luxury-cart-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(201, 169, 110, 0.1);
+    align-items: center;
+}
+
+.luxury-checkout .luxury-cart-item img {
+    width: 60px; height: 60px; object-fit: cover; border: 1px solid var(--bronze);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }

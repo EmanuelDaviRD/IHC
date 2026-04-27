@@ -241,7 +241,13 @@ app.post("/settings", authenticate, isAdmin, async (req, res) => {
 
 app.use(express.static(path.join(__dirname, "frontend")));
 
-app.use((req, res) => {
+// Proteção para rotas de API não encontradas
+app.use(['/produtos', '/pedidos', '/usuarios', '/settings', '/login', '/register'], (req, res) => {
+    res.status(404).json({ error: "Rota de API não encontrada" });
+});
+
+// Fallback para o frontend (SPA)
+app.get(/.*/, (req, res) => {
     res.sendFile(path.join(__dirname, "frontend", "index.html"));
 });
 

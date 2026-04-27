@@ -223,22 +223,41 @@ function renderCartModal() {
     if (!AppState.cart.length) {
         el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-shopping-bag" style="font-size:3rem;display:block;opacity:0.3;margin-bottom:1rem"></i><p>Carrinho vazio</p></div>';
         document.getElementById("cartTotal").innerHTML = formatMoney(0);
+        const checkoutBtn = document.querySelector('.btn-primary[onclick*="checkoutWhatsApp"]');
+        if (checkoutBtn) checkoutBtn.style.display = 'none';
         return;
     }
-    el.innerHTML = AppState.cart.map(item => `
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;padding:0.75rem;background:var(--light-bg);border-radius:12px">
-            <div style="display:flex;align-items:center;gap:0.75rem">
-                <img src="${item.image}" style="width:50px;height:50px;object-fit:cover;border-radius:8px" alt="${item.name}">
-                <div>
-                    <div style="font-weight:600">${item.name}</div>
-                    <div style="font-size:0.85rem;color:var(--text-light)">${formatMoney(item.price)} x ${item.qty}</div>
+
+    el.innerHTML = `
+        <div class="luxury-checkout">
+            <h3 class="luxury-header">Finalizar Pedido</h3>
+            <div class="luxury-form">
+                <div class="luxury-input-group">
+                    <label>Nome Completo</label>
+                    <input type="text" id="checkName" value="${AppState.currentUser?.name || ''}" placeholder="Seu nome">
+                </div>
+                <div class="luxury-input-group">
+                    <label>Endereço de Entrega</label>
+                    <input type="text" id="checkAddress" placeholder="Rua, Número, Bairro">
                 </div>
             </div>
-            <div style="display:flex;align-items:center;gap:0.5rem">
-                <strong style="color:var(--primary-dark)">${formatMoney(item.price * item.qty)}</strong>
-                <button onclick="removeFromCart('${item.id||item._id}')" style="background:var(--accent);border:none;color:white;border-radius:50%;width:28px;height:28px;cursor:pointer"><i class="fas fa-times" style="font-size:0.7rem"></i></button>
+            <div class="luxury-order-summary">
+                ${AppState.cart.map(item => `
+                    <div class="luxury-cart-item">
+                        <img src="${item.image}" alt="${item.name}">
+                        <div class="item-details">
+                            <span class="item-name">${item.name}</span>
+                            <span class="item-qty">${item.qty}x ${formatMoney(item.price)}</span>
+                        </div>
+                        <div class="item-price-total">
+                            ${formatMoney(item.price * item.qty)}
+                            <button onclick="removeFromCart('${item.id||item._id}')" class="btn-remove-luxury">&times;</button>
+                        </div>
+                    </div>
+                `).join('')}
             </div>
-        </div>`).join('');
+        </div>
+    `;
 
     const sub = getCartTotal(), disc = getDiscount(), fin = getFinalTotal();
     let html = '';
@@ -246,8 +265,14 @@ function renderCartModal() {
         html += `<div style="font-size:0.9rem;color:var(--text-muted);text-decoration:line-through">${formatMoney(sub)}</div>`;
         html += `<div style="font-size:0.85rem;color:var(--success);margin-bottom:0.3rem"><i class="fas fa-tag"></i> ${AppState.appliedCoupon.code}: -${formatMoney(disc)}</div>`;
     }
-    html += `<div style="font-size:1.5rem;color:var(--primary-dark);font-weight:800;font-family:'Playfair Display',serif">${formatMoney(fin)}</div>`;
+    html += `<div style="font-size:1.8rem;color:var(--bronze);font-weight:800;font-family:'Playfair Display',serif">${formatMoney(fin)}</div>`;
     document.getElementById("cartTotal").innerHTML = html;
+    
+    const checkoutBtn = document.querySelector('.btn-primary[onclick*="checkoutWhatsApp"]');
+    if (checkoutBtn) {
+        checkoutBtn.className = 'btn-primary btn-metallic';
+        checkoutBtn.innerHTML = '<i class="fab fa-whatsapp"></i> FINALIZAR NO WHATSAPP';
+    }
 }
 
 window.removeFromCart = id => {
@@ -357,10 +382,26 @@ async function register(name, email, password) {
 }
 
 function logout() {
+    const userName = AppState.currentUser?.name || "Emanuel";
     localStorage.removeItem("authToken");
     AppState.token = null; AppState.currentUser = null; AppState.appliedCoupon = null;
     updateUIForUser();
-    Swal.fire({ title: "Até logo!", icon: "info", confirmButtonColor: "#C9A96E" });
+    
+    const modal = document.createElement("div");
+    modal.className = "modal";
+    modal.id = "farewellModal";
+    modal.style.display = "flex";
+    modal.innerHTML = `
+        <div class="modal-content luxury-modal" style="text-align:center; padding:3rem">
+            <div style="font-size:4rem; color:var(--bronze); margin-bottom:1rem"><i class="fas fa-door-open"></i></div>
+            <h2 style="font-family:'Playfair Display'; color:var(--bronze); font-size:2.5rem; letter-spacing:3px">ATÉ BREVE!</h2>
+            <p style="color:var(--text-light); margin-bottom:2.5rem">Sua sessão foi encerrada, ${userName}.</p>
+            <div style="display:flex; flex-direction:column; gap:1rem">
+                <button class="btn-primary btn-metallic" onclick="location.reload()">VOLTAR À LOJA</button>
+                <button class="btn-secondary" onclick="openModal('authModal'); this.closest('.modal').remove()" style="border-color:var(--bronze); color:var(--bronze)">FAZER LOGIN NOVAMENTE</button>
+            </div>
+        </div>`;
+    document.body.appendChild(modal);
     renderCatalog();
 }
 
@@ -511,15 +552,21 @@ function bindAllEvents() {
 
 function showProfile() {
     if (!AppState.currentUser) return;
+    const modal = document.getElementById("profileModal");
+    const content = modal.querySelector('.modal-content');
+    content.classList.add('luxury-modal');
+
     const d = document.getElementById("profileInfo");
     if (d) d.innerHTML = `
-        <div style="text-align:center;margin-bottom:1.5rem">
-            <div style="width:80px;height:80px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-radius:50%;margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;color:var(--secondary);font-size:2rem;font-weight:700">${AppState.currentUser.name.charAt(0)}</div>
-            <h3 style="font-family:'Playfair Display',serif">${AppState.currentUser.name}</h3>
-        </div>
-        <div style="background:var(--light-bg);padding:1rem;border-radius:12px">
-            <p style="margin-bottom:0.5rem"><strong>Email:</strong> ${AppState.currentUser.email}</p>
-            <p><strong>Tipo:</strong> ${AppState.currentUser.role==="admin"?"Administrador":"Cliente"}</p>
+        <div style="text-align:center; padding:1rem">
+            <div class="er-logo-mark">ER</div>
+            <h2 style="font-family:'Playfair Display'; color:var(--bronze); font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2rem">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; color:var(--bronze)">Sessão Ativa</p>
+                <p style="font-weight:600; color:white">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-primary btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem">OK</button>
         </div>`;
     openModal("profileModal");
 }
