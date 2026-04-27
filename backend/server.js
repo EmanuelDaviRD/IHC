@@ -340,15 +340,9 @@ app.post("/settings", authenticate, isAdmin, async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.use(express.static(path.join(__dirname, "frontend"), { index: false }));
+app.use(express.static(path.join(__dirname, "frontend")));
 
-app.use((req, res) => {
-    const apiPrefixes = ['/produtos', '/pedidos', '/register', '/login', '/upload', '/usuarios', '/admin-check', '/cep', '/settings', '/uploads'];
-    const isApi = apiPrefixes.some(prefix => req.path.startsWith(prefix));
-    const isFile = req.path.includes('.');
-    
-    if (isApi || isFile) return res.status(404).json({ error: "Recurso não encontrado" });
-    
+app.get("*", (req, res) => {
     res.sendFile(path.join(__dirname, "frontend", "index.html"));
 });
 
