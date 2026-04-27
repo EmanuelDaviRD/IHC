@@ -8,7 +8,11 @@ let AppState = {
     filtersOpen: false
 };
 
-const formatMoney = v => `R$ ${v.toFixed(2).replace('.', ',')}`;
+const currencyFormatter = new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+});
+const formatMoney = v => currencyFormatter.format(v);
 const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
 
 function saveLocalCartFavs() {
@@ -112,6 +116,8 @@ function renderCatalog() {
         return;
     }
 
+    // Limpa ouvintes antigos e renderiza grid
+    g.innerHTML = '';
     g.innerHTML = f.map(p => {
         const pid = p.id || p._id;
         const isFav = AppState.favorites.some(favId => String(favId) === String(pid));
@@ -586,8 +592,7 @@ function showProfile() {
 }
 
 window.reopenWhatsApp = (orderId) => {
-    const order = AppState.products.find(o => String(o.id || o._id) === String(orderId));
-    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}`);
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}. Pode me ajudar?`);
     window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
 };
 

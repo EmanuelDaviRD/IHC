@@ -239,7 +239,12 @@ app.post("/settings", authenticate, isAdmin, async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.use(express.static(path.join(__dirname, "frontend")));
+app.use(express.static(path.join(__dirname, "frontend"), {
+    fallthrough: true // Permite que rotas não encontradas sigam para o fallback do SPA
+}));
+
+// Garante que arquivos inexistentes na pasta uploads não retornem o index.html
+app.use("/uploads", (req, res) => res.status(404).json({ error: "Arquivo não encontrado" }));
 
 // Proteção para rotas de API não encontradas
 app.use(['/produtos', '/pedidos', '/usuarios', '/settings', '/login', '/register'], (req, res) => {
