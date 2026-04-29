@@ -292,9 +292,9 @@ h1, h2, h3, h4, h5, h6 {
     display: flex; 
     justify-content: space-between; 
     align-items: center; 
-    flex-wrap: wrap; 
-    gap: 1rem; 
-    max-width: 1400px;
+    flex-wrap: nowrap; 
+    gap: 1.5rem; 
+    max-width: 1600px;
     margin: 0 auto;
     padding: 1rem 2rem;
 }
@@ -319,10 +319,18 @@ h1, h2, h3, h4, h5, h6 {
     font-family: 'Inter', sans-serif;
 }
 
+.header-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    min-width: 300px;
+}
+
 .header-actions {
     display: flex;
-    gap: 0.6rem;
+    gap: 0.8rem;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .icon-btn {
@@ -352,7 +360,7 @@ h1, h2, h3, h4, h5, h6 {
     position: absolute;
     top: -6px;
     right: -6px;
-    background: linear-gradient(135deg, var(--accent), #FF8E8E);
+    background: #FF3B30;
     color: white;
     border-radius: 50%;
     width: 20px;
@@ -366,17 +374,18 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .search-bar {
-    background: rgba(0,0,0,0.2);
-    padding: 0.75rem 2rem;
+    background: none;
+    padding: 0;
     display: flex;
     gap: 0.75rem;
-    max-width: 1400px;
-    margin: 0 auto;
+    width: 100%;
+    max-width: 450px;
+    margin: 0;
 }
 
 .search-bar input {
     flex: 1;
-    padding: 0.7rem 1.2rem;
+    padding: 0.6rem 1.2rem;
     border-radius: 50px;
     border: 1px solid rgba(201,169,110,0.3);
     outline: none;
@@ -414,35 +423,32 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Category nav restored - inline version removed */
 
-.category-nav ul {
+.category-nav {
     display: flex;
-    gap: 1rem;
-    list-style: none;
-    justify-content: flex-start;
     align-items: center;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1rem;
+    margin-right: 1rem;
 }
 
-.category-nav ul::-webkit-scrollbar { display: none; }
+.category-nav ul {
+    display: flex;
+    gap: 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
 
 .category-nav a {
     text-decoration: none;
     color: #888888;
     font-weight: 500;
-    padding: 0.6rem 1.8rem;
+    padding: 0.4rem 1rem;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50px;
     white-space: nowrap;
     transition: var(--transition);
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     border: 1px solid transparent;
     text-transform: uppercase;
     letter-spacing: 1px;
