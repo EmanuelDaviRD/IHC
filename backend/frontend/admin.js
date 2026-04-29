@@ -284,9 +284,10 @@ function openProductModal(product = null) {
                 <div class="form-row">
                     <div><label>Preço (R$)</label><input type="number" id="prodPrice" value="${product?.price || ''}" step="0.01" placeholder="0.00"></div>
                     <div><label>Estoque</label><input type="number" id="prodStock" value="${product?.stock || ''}" placeholder="0"></div>
+                </div>
+
                 <label>Descrição</label>
                 <textarea id="prodDesc" rows="3" placeholder="Descrição do produto">${product?.description || ''}</textarea>
-                <label>Foto do Produto</label>
                 ${product?.image ? `<img src="${product.image}" id="imgPreview" class="image-preview">` : '<img id="imgPreview" class="image-preview" style="display:none;">'}
                 <div class="file-input-wrapper">
                     <div class="file-input-btn" onclick="document.getElementById('prodImage').click()">
@@ -341,7 +342,7 @@ async function saveProduct(id) {
 
         if (!res.ok) throw new Error("Erro ao salvar");
         productsCache = [];
-        ordersCache = []; // Limpa caches para forçar atualização
+        ordersCache = [];
         closeModal();
         Swal.fire("Sucesso!", `Produto ${id && id !== 'null' ? 'atualizado' : 'criado'} com sucesso.`, "success");
         loadProductsPage();

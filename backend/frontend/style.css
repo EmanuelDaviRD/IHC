@@ -10,10 +10,10 @@
     --success: #4ECDC4;
     --gold: #D4AF37;
     --gold-light: #F4E4BC;
-    --dark: #0A0A0A; /* Matte Black mais profundo */
+    --dark: #0A0A0A;
     --dark-card: #0D0D15;
     --dark-hover: #161625;
-    --charcoal: #1A1A1A; /* Carvão escuro para inputs */
+    --charcoal: #1A1A1A;
     --bronze: #C9A96E;
     --bronze-dark: #A0824D;
     --bronze-metallic: linear-gradient(145deg, #A0824D, #C9A96E, #A0824D);
@@ -37,10 +37,10 @@
 .dark {
     --primary: #C9A96E;
     --primary-light: #F4E4BC;
-    --secondary: #0A0A12; /* Azul quase preto profundo */
+    --secondary: #0A0A12;
     --secondary-light: #151525;
-    --dark: #050508; /* Preto absoluto para o fundo */
-    --dark-card: #0D0D15; /* Cinza muito escuro para cards */
+    --dark: #050508;
+    --dark-card: #0D0D15;
     --dark-hover: #161625;
     --light-bg: #050508;
     --card-bg: #0D0D15;
@@ -48,13 +48,12 @@
     --text-light: #B8B4AC;
     --text-muted: #8B8B9B;
     --text-dim: #666675;
-    --border: #1A1A2E; /* Bordas muito sutis */
+    --border: #1A1A2E;
     --shadow: 0 4px 20px rgba(0,0,0,0.3);
     --shadow-lg: 0 12px 40px rgba(0,0,0,0.4);
     --shadow-bronze: 0 0 25px rgba(201, 169, 110, 0.15);
 }
 
-/* Luxury Modal Overrides */
 .modal-content.cart-modal {
     background-color: var(--dark) !important;
     border: 1px solid rgba(201, 169, 110, 0.3) !important;
@@ -124,7 +123,6 @@
     letter-spacing: 1px;
 }
 
-/* Luxury UI Components */
 .luxury-modal {
     background-image: radial-gradient(circle at 2px 2px, rgba(201, 169, 110, 0.05) 1px, transparent 0);
     background-size: 32px 32px;
@@ -181,7 +179,6 @@
     margin-bottom: 2rem;
 }
 
-/* Cart Items Luxury Grid */
 .luxury-cart-grid {
     display: flex;
     flex-direction: column;
@@ -228,7 +225,6 @@
     color: var(--accent);
 }
 
-/* Checkout Final Button */
 .btn-checkout-premium {
     background: #000000 !important;
     border: 1px solid var(--bronze) !important;
@@ -465,7 +461,7 @@ h1, h2, h3, h4, h5, h6 {
 .category-nav a:hover,
 .category-nav a.active {
     background: var(--bronze-metallic);
-    color: #0F0F1A; /* Texto escuro sobre o dourado para legibilidade premium */
+    color: #0F0F1A;
     box-shadow: 0 4px 15px rgba(201, 169, 110, 0.3);
 }
 
@@ -832,7 +828,7 @@ select:focus, .filter-group input:focus {
     cursor: pointer;
     font-size: 1.5rem;
     font-weight: bold;
-    color: #FFFFFF !important; /* X de fechar branco */
+    color: #FFFFFF !important;
     width: 32px;
     height: 32px;
     display: flex;

@@ -4,7 +4,7 @@ let AppState = {
     products: [], cart: [], favorites: [],
     coupons: [{ code: "BEMVINDO10", discount: 0.10 }, { code: "VIP20", discount: 0.20 }],
     appliedCoupon: null, currentUser: null, token: null,
-    activeCategory: "all", searchTerm: "", sortType: "", minPrice: 0, maxPrice: 1000,
+    activeCategory: "all", searchTerm: "", sortType: "", minPrice: 0, maxPrice: 10000,
     filtersOpen: false, productsLoaded: false
 };
 
@@ -22,18 +22,21 @@ function saveLocalCartFavs() {
 
 function loadLocalCartFavs() {
     const c = localStorage.getItem("edclaudia_cart");
+    AppState.cart = [];
+    AppState.favorites = [];
+
     if (c) {
         try {
             const parsed = JSON.parse(c);
             AppState.cart = Array.isArray(parsed) ? parsed.filter(i => i && (i.id || i._id)) : [];
-        } catch { AppState.cart = []; }
+        } catch { }
     }
     const f = localStorage.getItem("edclaudia_favorites");
     if (f) {
         try {
             const parsed = JSON.parse(f);
-            AppState.favorites = Array.isArray(parsed) ? parsed.filter(id => id && id !== "undefined" && id !== "null") : [];
-        } catch { AppState.favorites = []; }
+            AppState.favorites = Array.isArray(parsed) ? parsed.filter(id => id && String(id).trim() !== "" && id !== "undefined" && id !== "null") : [];
+        } catch { }
     }
     updateCartBadge(); updateFavBadge();
 }
@@ -99,20 +102,19 @@ function renderCatalog() {
     const filtersBar = document.getElementById("filtersBar");
     if (filtersBar) {
         filtersBar.style.display = AppState.filtersOpen ? 'flex' : 'none';
-        if (AppState.filtersOpen && !filtersBar.innerHTML) {
-            filtersBar.innerHTML = `
-                <div class="filter-group"><label>Min:</label><input type="number" id="minP" value="${AppState.minPrice}" style="width:70px"></div>
-                <div class="filter-group"><label>Max:</label><input type="number" id="maxP" value="${AppState.maxPrice}" style="width:70px"></div>
-                <div class="filter-group">
-                    <select id="sortS">
-                        <option value="">Ordenar por...</option>
-                        <option value="price_asc">Menor preço</option>
-                        <option value="price_desc">Maior preço</option>
-                        <option value="sales">Mais vendidos</option>
-                    </select>
-                </div>`;
-            setupFilterListeners();
-        }
+        filtersBar.innerHTML = `
+            <div class="filter-group"><label>Min:</label><input type="number" id="minP" value="${AppState.minPrice}" style="width:70px"></div>
+            <div class="filter-group"><label>Max:</label><input type="number" id="maxP" value="${AppState.maxPrice}" style="width:70px"></div>
+            <div class="filter-group">
+                <select id="sortS">
+                    <option value="" ${AppState.sortType === '' ? 'selected' : ''}>Ordenar por...</option>
+                    <option value="price_asc" ${AppState.sortType === 'price_asc' ? 'selected' : ''}>Menor preço</option>
+                    <option value="price_desc" ${AppState.sortType === 'price_desc' ? 'selected' : ''}>Maior preço</option>
+                    <option value="sales" ${AppState.sortType === 'sales' ? 'selected' : ''}>Mais vendidos</option>
+                </select>
+            </div>`;
+        setupFilterListeners();
+
         const countEl = filtersBar.querySelector('.item-count') || document.createElement('div');
         countEl.className = 'filter-group item-count';
         countEl.innerHTML = `<span style="font-size:0.8rem">${f.length} itens</span>`;
@@ -126,7 +128,6 @@ function renderCatalog() {
         g.innerHTML = '<div style="text-align:center;padding:5rem;color:var(--text-muted);grid-column:1/-1;width:100%"><h3>Nenhum produto encontrado nesta busca</h3></div>';
         return;
     }
-    g.innerHTML = '';
     g.innerHTML = f.map(p => {
         const pid = p.id || p._id;
         const isFav = AppState.favorites.some(favId => String(favId) === String(pid));
@@ -289,7 +290,7 @@ function renderCartModal() {
         html += `<div style="font-size:0.85rem;color:var(--success);margin-bottom:0.3rem"><i class="fas fa-tag"></i> ${AppState.appliedCoupon.code}: -${formatMoney(disc)}</div>`;
     }
     
-    document.getElementById("cartTotal").innerHTML = ''; // Limpamos pois o total vai para o botão
+    document.getElementById("cartTotal").innerHTML = '';
 
     const checkoutBtn = document.querySelector('.btn-primary[onclick*="checkoutWhatsApp"]');
     if (checkoutBtn) {
@@ -633,10 +634,9 @@ async function showOrderHistory() {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-    // Forçar tema escuro como padrão solicitado
     document.body.classList.add("dark");
     
-    bindAllEvents(); // Bind imediato para os botões fixos funcionarem
+    bindAllEvents();
     loadLocalCartFavs();
     checkAuthToken();
     await loadProducts();
