@@ -311,7 +311,7 @@ function renderCartModal() {
     if (!AppState.cart.length) {
         el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-shopping-bag" style="font-size:3rem;display:block;opacity:0.3;margin-bottom:1rem"></i><p>Carrinho vazio</p></div>';
         document.getElementById("cartTotal").innerHTML = formatMoney(0);
-        const checkoutBtn = document.querySelector('.btn-primary[onclick*="checkoutWhatsApp"]');
+        const checkoutBtn = document.querySelector('[onclick*="checkoutWhatsApp"]');
         if (checkoutBtn) checkoutBtn.style.display = 'none';
         return;
     }
@@ -359,10 +359,11 @@ function renderCartModal() {
         html += `<div style="font-size:0.85rem;color:var(--success);margin-bottom:0.3rem"><i class="fas fa-tag"></i> ${AppState.appliedCoupon.code}: -${formatMoney(disc)}</div>`;
     }
     
-    document.getElementById("cartTotal").innerHTML = '';
+    document.getElementById("cartTotal").innerHTML = html + formatMoney(fin);
 
-    const checkoutBtn = document.querySelector('.btn-primary[onclick*="checkoutWhatsApp"]');
+    const checkoutBtn = document.querySelector('[onclick*="checkoutWhatsApp"]');
     if (checkoutBtn) {
+        checkoutBtn.style.display = 'flex';
         checkoutBtn.className = 'btn-checkout-premium';
         checkoutBtn.innerHTML = `<i class="fab fa-whatsapp"></i> FINALIZAR PEDIDO VIA WHATSAPP • ${formatMoney(fin)}`;
     }
