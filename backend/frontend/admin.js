@@ -131,15 +131,24 @@ async function fetchWithAuth(url, options = {}) {
 
 async function loadDashboard() {
     try {
+        console.log("📊 Carregando dados do Dashboard...");
         const [productsRes, ordersRes, usersRes] = await Promise.all([
             fetch(`${API_URL}/produtos`),
             fetchWithAuth(`${API_URL}/pedidos`),
             fetchWithAuth(`${API_URL}/usuarios`)
         ]);
 
-        productsCache = await productsRes.json();
-        ordersCache = await ordersRes.json();
-        customersCache = await usersRes.json();
+        if (!productsRes.ok || !ordersRes.ok || !usersRes.ok) {
+            throw new Error("Uma ou mais requisições falharam (Verifique autenticação ou MongoDB)");
+        }
+
+        [productsCache, ordersCache, customersCache] = await Promise.all([
+            productsRes.json(),
+            ordersRes.json(),
+            usersRes.json()
+        ]);
+
+        console.log("✅ Dados do Dashboard carregados.");
 
         const totalSales = ordersCache.reduce((s, o) => s + o.total, 0);
         const totalOrders = ordersCache.length;
@@ -180,7 +189,8 @@ async function loadDashboard() {
 
         renderSalesChart();
     } catch (err) {
-        document.getElementById("adminContent").innerHTML = `<p style="color:#ff4d4d">Erro: ${err.message}</p>`;
+        console.error("❌ Erro no Dashboard:", err);
+        document.getElementById("adminContent").innerHTML = `<div class="section-card"><h3 style="color:#ff4d4d">Erro ao carregar Dashboard</h3><p>Causa: ${err.message}</p></div>`;
     }
 }
 
@@ -221,6 +231,7 @@ async function loadProductsPage() {
     try {
         if (productsCache.length === 0) {
             const res = await fetch(`${API_URL}/produtos`);
+            if (!res.ok) throw new Error(`Status ${res.status}`);
             productsCache = await res.json();
         }
 
@@ -255,7 +266,8 @@ async function loadProductsPage() {
             </div>
         `;
     } catch (err) {
-        document.getElementById("adminContent").innerHTML = `<p style="color:#ff4d4d">Erro: ${err.message}</p>`;
+        console.error("❌ Erro na página de produtos:", err);
+        document.getElementById("adminContent").innerHTML = `<div class="section-card"><h3 style="color:#ff4d4d">Erro ao carregar produtos</h3><p>${err.message}</p></div>`;
     }
 }
 

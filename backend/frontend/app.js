@@ -71,22 +71,36 @@ function updateFavBadge() {
 
 async function loadProducts() {
     const app = document.getElementById("app");
-    if (app) app.innerHTML = `<div class="skeleton-grid">
-        ${'<div class="skeleton-card"></div>'.repeat(4)}
-    </div>`;
+    if (!app) {
+        console.error("❌ Erro Crítico: O container <div id='app'> não foi encontrado no HTML. Verifique o index.html.");
+        return;
+    }
+
+    // Inicia o estado de carregamento visual (limpa o texto 'Carregando produtos...')
+    app.innerHTML = `<div class="skeleton-grid">${'<div class="skeleton-card"></div>'.repeat(4)}</div>`;
 
     try {
-        const res = await fetch(`${API_URL}/produtos`);
-        if (!res.ok) throw new Error();
-        AppState.products = await res.json();
+        console.log(`📡 Conectando à API: ${API_URL}/produtos...`);
+        const res = await fetch(`${API_URL}/produtos`, { method: 'GET' });
+        
+        if (!res.ok) throw new Error(`Erro ${res.status}: Não foi possível buscar os produtos.`);
+        
+        const data = await res.json();
+        if (!Array.isArray(data)) throw new Error("A resposta da API não é um array de produtos válido.");
+
+        AppState.products = data;
         AppState.productsLoaded = true;
         renderCatalog();
-    } catch {
-        if (app) app.innerHTML = `
+    } catch (err) {
+        console.error("❌ Erro ao conectar com a API de produtos:", err);
+        app.innerHTML = `
             <div style="text-align:center;padding:4rem;color:var(--text-muted)">
-                <i class="fas fa-exclamation-circle" style="font-size:3rem;margin-bottom:1rem"></i>
-                <h3>Ops! Erro ao carregar vitrine</h3>
-                <button onclick="loadProducts()" class="btn-secondary" style="width:auto;margin-top:1rem">Tentar novamente</button>
+                <i class="fas fa-exclamation-circle" style="font-size:3rem;margin-bottom:1rem;color:#ff6b6b"></i>
+                <h3>Erro ao carregar produtos</h3>
+                <p style="font-size:0.9rem; margin-top:0.5rem; color:#ff6b6b">Verifique a conexão com o banco de dados MongoDB.</p>
+                <small>${err.message}</small>
+                <br>
+                <button onclick="loadProducts()" class="btn-primary" style="width:auto;margin-top:1.5rem">Tentar novamente</button>
             </div>`;
     }
 }
