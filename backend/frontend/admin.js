@@ -289,12 +289,13 @@ function openProductModal(product = null) {
                 <label>Descrição</label>
                 <textarea id="prodDesc" rows="3" placeholder="Descrição do produto">${product?.description || ''}</textarea>
                 ${product?.image ? `<img src="${product.image}" id="imgPreview" class="image-preview">` : '<img id="imgPreview" class="image-preview" style="display:none;">'}
-                <div class="file-input-wrapper">
-                    <div class="file-input-btn" onclick="document.getElementById('prodImage').click()">
-                        <i class="fas fa-cloud-upload-alt" style="font-size:1.5rem;display:block;margin-bottom:0.5rem;"></i>
-                        <span>Clique para enviar foto</span>
-                    </div>
-                    <input type="file" id="prodImage" accept="image/*" onchange="previewImage(this)">
+div class="file-input-wrapper">
+                    <label style="display:flex;align-items:center;gap:0.5rem;color:var(--text);font-weight:500">
+                        <i class="fas fa-link"></i>
+                        URL da Imagem (ImgBB)
+                    </label>
+                    <input type="url" id="imagemURL" value="${product?.image || ''}" placeholder="https://ibb.co/xxx/yyy.jpg" style="width:100%;padding:0.75rem;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--light-bg);margin-top:0.25rem">
+                    ${product?.image ? `<img src="${product.image}" id="imgPreview" class="image-preview" style="width:100%;max-width:300px;height:200px;object-fit:cover;border-radius:var(--radius-sm);margin-top:0.5rem;display:block;box-shadow:var(--shadow)">` : ''}
                 </div>
                 <div style="display:flex;gap:1rem;margin-top:1rem;">
                     <button class="btn btn-save" onclick="saveProduct('${product?._id || product?.id || 'null'}')"><i class="fas fa-save"></i> Salvar</button>
@@ -306,7 +307,8 @@ function openProductModal(product = null) {
     modal.onclick = (e) => { if (e.target === modal) closeModal(); };
 }
 
-function previewImage(url) {
+function previewImage() {
+    const url = document.getElementById("imagemURL").value;
     const preview = document.getElementById("imgPreview");
     if (url) {
         preview.src = url;
@@ -322,7 +324,7 @@ async function saveProduct(id) {
     const category = document.getElementById("prodCategory").value;
     const stock = parseInt(document.getElementById("prodStock").value) || 0;
     const description = document.getElementById("prodDesc").value;
-    const image = document.getElementById("prodImage").value;
+const image = document.getElementById("imagemURL").value;
 
     if (!name || !price) {
         Swal.fire("Erro", "Nome e preço são obrigatórios", "error");

@@ -10,7 +10,7 @@
     --success: #4ECDC4;
     --gold: #D4AF37;
     --gold-light: #F4E4BC;
-    --dark: #0A0A0A;
+--dark: #000000;
     --dark-card: #0D0D15;
     --dark-hover: #161625;
     --charcoal: #1A1A1A;
@@ -20,8 +20,8 @@
     --gold-glow: 0 0 10px rgba(201, 169, 110, 0.2);
     --bronze-glow: rgba(201, 169, 110, 0.4);
     --sea-green: #20403B;
-    --light-bg: #F8F6F1;
-    --card-bg: #FFFFFF;
+--light-bg: #000000;
+--card-bg: #111111;
     --text: #2C2C3A;
     --text-light: #6B6B7B;
     --text-muted: #9B9BAB;
