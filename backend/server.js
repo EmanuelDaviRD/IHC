@@ -209,16 +209,22 @@ app.put("/admin/change-password", authenticate, isAdmin, async (req, res) => {
 app.post("/upload", authenticate, isAdmin, upload.single("image"), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: "Nenhuma imagem enviada" });
+        
+        // Tenta fazer o upload para a nuvem (Cloudinary)
         const cloudUrl = await uploadToCloudinary(req.file.path);
         
-        if (cloudUrl) {
-            if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-            return res.json({ imageUrl: cloudUrl });
+        // Se falhar o upload para a nuvem, não podemos aceitar o arquivo local
+        if (!cloudUrl) {
+            throw new Error("Falha ao salvar imagem na nuvem. Verifique suas credenciais do Cloudinary.");
         }
-        res.json({ imageUrl: `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}` });
+
+        // Se deu certo, removemos o arquivo temporário do servidor
+        if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+        return res.json({ imageUrl: cloudUrl });
+
     } catch (err) {
         if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-        res.status(500).json({ error: "Erro no processamento da imagem" });
+        res.status(500).json({ error: err.message });
     }
 });
 

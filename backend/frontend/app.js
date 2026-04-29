@@ -5,7 +5,7 @@ let AppState = {
     coupons: [{ code: "BEMVINDO10", discount: 0.10 }, { code: "VIP20", discount: 0.20 }],
     appliedCoupon: null, currentUser: null, token: null,
     activeCategory: "all", searchTerm: "", sortType: "", minPrice: 0, maxPrice: 1000,
-    filtersOpen: false
+    filtersOpen: false, productsLoaded: false
 };
 
 const currencyFormatter = new Intl.NumberFormat('pt-BR', {
@@ -59,6 +59,7 @@ async function loadProducts() {
         const res = await fetch(`${API_URL}/produtos`);
         if (!res.ok) throw new Error();
         AppState.products = await res.json();
+        AppState.productsLoaded = true;
         renderCatalog();
     } catch {
         if (app) app.innerHTML = `
@@ -122,11 +123,9 @@ function renderCatalog() {
     if (!g) return;
 
     if (!f.length) {
-        g.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-muted);grid-column:1/-1"><h3>Nenhum produto encontrado</h3></div>';
+        g.innerHTML = '<div style="text-align:center;padding:5rem;color:var(--text-muted);grid-column:1/-1;width:100%"><h3>Nenhum produto encontrado nesta busca</h3></div>';
         return;
     }
-
-    // Limpa ouvintes antigos e renderiza grid
     g.innerHTML = '';
     g.innerHTML = f.map(p => {
         const pid = p.id || p._id;

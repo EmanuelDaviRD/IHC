@@ -480,22 +480,24 @@ h1, h2, h3, h4, h5, h6 {
     gap: 1rem;
     flex-wrap: wrap;
     margin-bottom: 2rem;
-    align-items: center;
-    background: var(--card-bg);
+    align-items: cente;
+    background: var(--dark-card);
     padding: 1rem 1.5rem;
     border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border);
+    box-shadow: var(--shadow-bronze);
+    border: 1px solid rgba(201, 169, 110, 0.2);
+    margin-bottom: 2rem;
 }
 
 .filter-group {
     display: flex;
     gap: 0.5rem;
     align-items: center;
-    background: var(--light-bg);
+    background: rgba(255, 255, 255, 0.05);
     padding: 0.5rem 1rem;
     border-radius: 50px;
-    border: 1px solid var(--border);
+    border: 1px solid rgba(201, 169, 110, 0.1);
+    color: var(--text);
 }
 
 .filter-group label {
