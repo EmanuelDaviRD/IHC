@@ -182,11 +182,11 @@ window.resetFilters = function() {
 function renderFilterModalUI() {
     const cats = [
         {id: 'all', label: 'Todos'},
-        {id: 'Novidades', label: 'Novidades ✨'},
+        {id: 'Novidades', label: 'Novidades'},
         {id: 'Natura', label: 'Natura'},
         {id: 'O Boticário', label: 'O Boticário'},
         {id: 'Avon', label: 'Avon'},
-        {id: 'Kits', label: 'Kits & Presentes 🎁'},
+        {id: 'Kits', label: 'Kits & Presentes'},
         {id: 'Acessórios', label: 'Acessórios'}
     ];
 
@@ -215,7 +215,15 @@ window.addToCart = function(id) {
     if (item) item.qty++;
     else { const prod = AppState.products.find(p => String(p.id||p._id) === String(id)); if (prod) AppState.cart.push({...prod, qty:1}); }
     saveLocalCartFavs(); updateCartBadge();
-    Swal.fire({ title: "Adicionado!", icon: "success", timer: 1200, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+    Swal.fire({ 
+        title: "Adicionado!", 
+        icon: "success", 
+        timer: 1500, 
+        showConfirmButton: false, 
+        background: '#1A1D20',
+        color: '#FFF',
+        iconColor: '#C9A96E'
+    });
 };
 
 window.toggleFavorite = function(id) {
