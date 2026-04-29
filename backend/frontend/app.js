@@ -22,9 +22,19 @@ function saveLocalCartFavs() {
 
 function loadLocalCartFavs() {
     const c = localStorage.getItem("edclaudia_cart");
-    if (c) AppState.cart = JSON.parse(c);
+    if (c) {
+        try {
+            const parsed = JSON.parse(c);
+            AppState.cart = Array.isArray(parsed) ? parsed.filter(i => i && (i.id || i._id)) : [];
+        } catch { AppState.cart = []; }
+    }
     const f = localStorage.getItem("edclaudia_favorites");
-    if (f) AppState.favorites = JSON.parse(f);
+    if (f) {
+        try {
+            const parsed = JSON.parse(f);
+            AppState.favorites = Array.isArray(parsed) ? parsed.filter(id => id && id !== "undefined" && id !== "null") : [];
+        } catch { AppState.favorites = []; }
+    }
     updateCartBadge(); updateFavBadge();
 }
 
@@ -157,6 +167,7 @@ window.addToCart = function(id) {
 };
 
 window.toggleFavorite = function(id) {
+    if (!id || id === 'undefined') return;
     const sid = String(id);
     const idx = AppState.favorites.findIndex(favId => String(favId) === sid);
     

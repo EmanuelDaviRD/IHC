@@ -150,10 +150,11 @@ async function loadDashboard() {
         const content = document.getElementById("adminContent");
         content.innerHTML = `
             <div class="stats-grid">
-                <div class="stat-card pink"><i class="fas fa-dollar-sign"></i><h3>R$ ${totalSales.toFixed(2)}</h3><p>Total em Vendas</p></div>
-                <div class="stat-card purple"><i class="fas fa-shopping-bag"></i><h3>${totalOrders}</h3><p>Pedidos Realizados</p></div>
-                <div class="stat-card gold"><i class="fas fa-box-open"></i><h3>${totalProducts}</h3><p>Produtos Cadastrados</p></div>
-                <div class="stat-card cyan"><i class="fas fa-users"></i><h3>${totalCustomers}</h3><p>Clientes</p></div>
+                <div class="stat-card pink"><i class="fas fa-dollar-sign" style="font-size:2rem"></i><h3>R$ ${totalSales.toFixed(2)}</h3><p>Total em Vendas</p></div>
+                <div class="stat-card purple"><i class="fas fa-shopping-bag" style="font-size:2rem"></i><h3>${totalOrders}</h3><p>Pedidos Realizados</p></div>
+                <div class="stat-card gold"><i class="fas fa-box-open" style="font-size:2rem"></i><h3>${totalProducts}</h3><p>Produtos Cadastrados</p></div>
+                <div class="stat-card cyan"><i class="fas fa-users" style="font-size:2rem"></i><h3>${totalCustomers}</h3><p>Clientes</p></div>
+            </div>
             <div class="chart-container">
                 <h3><i class="fas fa-chart-bar"></i> Vendas por Produto</h3>
                 <canvas id="salesChart"></canvas>
@@ -704,7 +705,7 @@ async function loadLayoutPage() {
 
                 <div class="layout-section">
                     <h4><i class="fas fa-eye"></i> Pré-visualização</h4>
-                    <div id="layoutPreview" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem;">
+                    <div id="layoutPreview" style="background: var(--dark-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem;">
                         <div style="display:flex; gap: 1rem; margin-bottom: 1rem;">
                             <div style="width: 80px; height: 80px; background: var(--primary); border-radius: var(--radius-sm);"></div>
                             <div style="flex: 1;">
