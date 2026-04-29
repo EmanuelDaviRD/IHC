@@ -21,6 +21,8 @@ function saveLocalCartFavs() {
 }
 
 function loadLocalCartFavs() {
+    console.log('Carregando localStorage favoritos...');
+    
     const c = localStorage.getItem("edclaudia_cart");
     AppState.cart = [];
     AppState.favorites = [];
@@ -29,15 +31,24 @@ function loadLocalCartFavs() {
         try {
             const parsed = JSON.parse(c);
             AppState.cart = Array.isArray(parsed) ? parsed.filter(i => i && (i.id || i._id)) : [];
-        } catch { }
+        } catch (e) {
+            console.error('Erro ao parse cart:', e);
+        }
     }
+    
     const f = localStorage.getItem("edclaudia_favorites");
     if (f) {
         try {
             const parsed = JSON.parse(f);
+            console.log('Parsed favoritos:', parsed);
             AppState.favorites = Array.isArray(parsed) ? parsed.filter(id => id && String(id).trim() !== "" && id !== "undefined" && id !== "null") : [];
-        } catch { }
+            console.log('Filtrado favoritos:', AppState.favorites);
+        } catch (e) {
+            console.error('Erro ao parse favoritos:', e);
+        }
     }
+    
+    console.log('Final favoritos array:', AppState.favorites, 'Length:', AppState.favorites.length);
     updateCartBadge(); updateFavBadge();
 }
 
@@ -53,6 +64,7 @@ function updateFavBadge() {
         const count = AppState.favorites.length;
         b.innerText = count;
         b.style.display = count > 0 ? 'flex' : 'none';
+        console.log('Favoritos badge atualizado:', count, 'Array:', AppState.favorites);
     }
 }
 
@@ -176,8 +188,19 @@ window.toggleFavorite = function(id) {
     const sid = String(id);
     const idx = AppState.favorites.findIndex(favId => String(favId) === sid);
     
-    if (idx > -1) AppState.favorites.splice(idx, 1); else AppState.favorites.push(sid);
-    saveLocalCartFavs(); updateFavBadge(); renderCatalog();
+    console.log('Toggle favorite:', sid, 'Index found:', idx, 'Array atual:', AppState.favorites);
+    
+    if (idx > -1) {
+        AppState.favorites.splice(idx, 1);
+        console.log('Removido favorito');
+    } else {
+        AppState.favorites.push(sid);
+        console.log('Adicionado favorito');
+    }
+    
+    saveLocalCartFavs();
+    updateFavBadge();
+    renderCatalog();
 };
 
 function showProductModal(id) {
