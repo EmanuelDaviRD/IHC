@@ -553,20 +553,20 @@ function bindAllEvents() {
         }
     };
 
-    document.getElementById("profileLink").onclick = (e) => { e.preventDefault(); showProfile(); };
-    document.getElementById("ordersLink").onclick = (e) => { e.preventDefault(); showOrderHistory(); };
-    document.getElementById("adminPanelLink").onclick = (e) => {
+    document.getElementById("profileLink")?.addEventListener("click", (e) => { e.preventDefault(); showProfile(); });
+    document.getElementById("ordersLink")?.addEventListener("click", (e) => { e.preventDefault(); showOrderHistory(); });
+    document.getElementById("adminPanelLink")?.addEventListener("click", (e) => {
         e.preventDefault();
         if (AppState.currentUser?.role === "admin") window.location.href = "/admin";
         else Swal.fire({ title: "Acesso negado", icon: "error", confirmButtonColor: "#C9A96E" });
-    };
+    });
 
-    document.getElementById("doLoginBtn").onclick = () => {
+    document.getElementById("doLoginBtn")?.addEventListener("click", () => {
         login(document.getElementById("loginEmail")?.value, document.getElementById("loginPassword")?.value);
-    };
-    document.getElementById("doRegisterBtn").onclick = () => {
+    });
+    document.getElementById("doRegisterBtn")?.addEventListener("click", () => {
         register(document.getElementById("regName")?.value, document.getElementById("regEmail")?.value, document.getElementById("regPassword")?.value);
-    };
+    });
 
     document.querySelectorAll(".close").forEach(b => b.onclick = function() { closeModal(this.closest(".modal").id); });
     window.onclick = e => { if (e.target.classList.contains("modal")) closeModal(e.target.id); };
@@ -592,11 +592,11 @@ function bindAllEvents() {
         renderCatalog();
     });
 
-    document.getElementById("searchBtn").onclick = () => {
+    document.getElementById("searchBtn")?.addEventListener("click", () => {
         AppState.searchTerm = document.getElementById("globalSearch")?.value || "";
         renderCatalog();
-    };
-    document.getElementById("globalSearch").onkeyup = debounce((e) => { AppState.searchTerm = e.target.value; renderCatalog(); }, 300);
+    });
+    document.getElementById("globalSearch")?.addEventListener("keyup", debounce((e) => { AppState.searchTerm = e.target.value; renderCatalog(); }, 300));
 
     const applyCoupon = document.getElementById("applyCouponBtn");
     if (applyCoupon) applyCoupon.onclick = () => {
