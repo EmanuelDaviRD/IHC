@@ -27,19 +27,8 @@
         </div>
         
         <div class="header-actions">
-            <button id="filterToggle" class="icon-btn" title="Filtros"><i class="fas fa-sliders-h"></i></button>
-            <nav class="category-nav">
-                <ul>
-                    <li><a href="#" class="cat-link active" data-cat="all">Todos</a></li>
-                    <li><a href="#" class="cat-link" data-cat="Novidades">Novidades</a></li>
-                    <li><a href="#" class="cat-link" data-cat="Natura">Natura</a></li>
-                    <li><a href="#" class="cat-link" data-cat="O Boticário">O Boticário</a></li>
-                    <li><a href="#" class="cat-link" data-cat="Avon">Avon</a></li>
-                    <li><a href="#" class="cat-link" data-cat="Kits">Kits & Presentes</a></li>
-                    <li><a href="#" class="cat-link" data-cat="Acessórios">Acessórios</a></li>
-                </ul>
-            </nav>
             <button id="themeToggle" class="icon-btn" title="Tema"><i class="fas fa-moon"></i></button>
+            <button id="filterToggle" class="icon-btn" title="Filtros e Categorias"><i class="fas fa-sliders-h"></i></button>
             <button id="favoritesIcon" class="icon-btn" title="Favoritos">
                 <i class="fas fa-heart"></i>
                 <span id="favCount" class="badge">1</span>
@@ -120,6 +109,41 @@
             <input type="password" id="regPassword" placeholder="Senha" autocomplete="new-password">
             <button id="doRegisterBtn" class="btn-primary">Cadastrar</button>
         </div>
+    </div>
+</div>
+
+<!-- Modal de Filtros e Categorias -->
+<div id="filterModal" class="modal">
+    <div class="modal-content luxury-modal" style="max-width: 500px;">
+        <span class="close">&times;</span>
+        <h2 style="color:var(--bronze); margin-bottom: 2rem; border-bottom: 1px solid rgba(201,169,110,0.2); padding-bottom: 1rem;">
+            <i class="fas fa-sliders-h"></i> Filtros e Categorias
+        </h2>
+        
+        <div class="filter-section">
+            <h4 style="color:var(--text-light); margin-bottom: 1rem; font-family: 'Inter'; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 2px;">Categorias</h4>
+            <div class="category-filter-grid" id="modalCategories">
+                <!-- Injetado via JS -->
+            </div>
+        </div>
+
+        <div class="filter-section" style="margin-top: 2.5rem;">
+            <h4 style="color:var(--text-light); margin-bottom: 1rem; font-family: 'Inter'; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 2px;">Preço e Ordenação</h4>
+            <div class="filter-controls-modal">
+                <div class="price-inputs">
+                    <input type="number" id="minPModal" placeholder="Mín R$" class="luxury-field" style="padding: 0.8rem !important">
+                    <input type="number" id="maxPModal" placeholder="Máx R$" class="luxury-field" style="padding: 0.8rem !important">
+                </div>
+                <select id="sortSModal" class="luxury-field" style="width: 100%; margin-top: 1rem;">
+                    <option value="">Ordenar por...</option>
+                    <option value="price_asc">Menor preço</option>
+                    <option value="price_desc">Maior preço</option>
+                    <option value="sales">Mais vendidos</option>
+                </select>
+            </div>
+        </div>
+        
+        <button onclick="closeModal('filterModal')" class="btn-primary btn-metallic" style="margin-top: 2.5rem;">Ver Resultados</button>
     </div>
 </div>
 

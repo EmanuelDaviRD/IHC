@@ -126,30 +126,8 @@ function renderCatalog() {
     const app = document.getElementById("app");
     if (!app) return;
 
-    if (!document.getElementById("filtersBar")) {
-        app.innerHTML = `<div id="filtersBar" class="filters-bar"></div><div id="productsGrid" class="products-grid"></div>`;
-    }
-
-    const filtersBar = document.getElementById("filtersBar");
-    if (filtersBar) {
-        filtersBar.style.display = AppState.filtersOpen ? 'flex' : 'none';
-        filtersBar.innerHTML = `
-            <div class="filter-group"><label>Min:</label><input type="number" id="minP" value="${AppState.minPrice}" style="width:70px"></div>
-            <div class="filter-group"><label>Max:</label><input type="number" id="maxP" value="${AppState.maxPrice}" style="width:70px"></div>
-            <div class="filter-group">
-                <select id="sortS">
-                    <option value="" ${AppState.sortType === '' ? 'selected' : ''}>Ordenar por...</option>
-                    <option value="price_asc" ${AppState.sortType === 'price_asc' ? 'selected' : ''}>Menor preço</option>
-                    <option value="price_desc" ${AppState.sortType === 'price_desc' ? 'selected' : ''}>Maior preço</option>
-                    <option value="sales" ${AppState.sortType === 'sales' ? 'selected' : ''}>Mais vendidos</option>
-                </select>
-            </div>`;
-        setupFilterListeners();
-
-        const countEl = filtersBar.querySelector('.item-count') || document.createElement('div');
-        countEl.className = 'filter-group item-count';
-        countEl.innerHTML = `<span style="font-size:0.8rem">${f.length} itens</span>`;
-        if (!filtersBar.querySelector('.item-count')) filtersBar.appendChild(countEl);
+    if (!document.getElementById("productsGrid")) {
+        app.innerHTML = `<div id="productsGrid" class="products-grid"></div>`;
     }
 
     const g = document.getElementById("productsGrid");
@@ -178,15 +156,41 @@ function renderCatalog() {
             </div></div></div>`;
     }).join('');
 
+    renderFilterModalUI(); // Atualiza a UI do modal com os estados atuais
     document.querySelectorAll(".btn-cart").forEach(b => b.onclick = e => { e.stopPropagation(); addToCart(b.dataset.id); });
     document.querySelectorAll(".btn-fav").forEach(b => b.onclick = e => { e.stopPropagation(); toggleFavorite(b.dataset.id); });
     document.querySelectorAll(".product-card").forEach(c => c.onclick = () => showProductModal(c.dataset.id));
 }
 
+function renderFilterModalUI() {
+    const cats = [
+        {id: 'all', label: 'Todos'},
+        {id: 'Novidades', label: 'Novidades ✨'},
+        {id: 'Natura', label: 'Natura'},
+        {id: 'O Boticário', label: 'O Boticário'},
+        {id: 'Avon', label: 'Avon'},
+        {id: 'Kits', label: 'Kits & Presentes 🎁'},
+        {id: 'Acessórios', label: 'Acessórios'}
+    ];
+
+    const container = document.getElementById("modalCategories");
+    if (container) {
+        container.innerHTML = cats.map(c => `
+            <button class="cat-filter-btn ${AppState.activeCategory === c.id ? 'active' : ''}" 
+                    onclick="selectCategory('${c.id}')">${c.label}</button>
+        `).join('');
+    }
+}
+
+window.selectCategory = function(cat) {
+    AppState.activeCategory = cat;
+    renderCatalog();
+};
+
 function setupFilterListeners() {
-    document.getElementById("minP")?.addEventListener("change", e => { AppState.minPrice = +e.target.value; renderCatalog(); });
-    document.getElementById("maxP")?.addEventListener("change", e => { AppState.maxPrice = +e.target.value; renderCatalog(); });
-    document.getElementById("sortS")?.addEventListener("change", e => { AppState.sortType = e.target.value; renderCatalog(); });
+    document.getElementById("minPModal")?.addEventListener("input", e => { AppState.minPrice = +e.target.value || 0; renderCatalog(); });
+    document.getElementById("maxPModal")?.addEventListener("input", e => { AppState.maxPrice = +e.target.value || 10000; renderCatalog(); });
+    document.getElementById("sortSModal")?.addEventListener("change", e => { AppState.sortType = e.target.value; renderCatalog(); });
 }
 
 window.addToCart = function(id) {
@@ -496,14 +500,9 @@ function closeModal(id) { const m = document.getElementById(id); if (m) { m.styl
 function bindAllEvents() {
     const filterToggle = document.getElementById("filterToggle");
     if (filterToggle) {
-        filterToggle.onclick = (e) => {
-            e.preventDefault();
-            AppState.filtersOpen = !AppState.filtersOpen;
-            const icon = filterToggle.querySelector('i');
-            if (icon) icon.className = AppState.filtersOpen ? 'fas fa-times' : 'fas fa-sliders-h';
-            renderCatalog();
-        };
+        filterToggle.onclick = () => openModal("filterModal");
     }
+    setupFilterListeners();
 
     const loginBtn = document.getElementById("loginBtn");
     if (loginBtn) loginBtn.onclick = (e) => { e.preventDefault(); openModal("authModal"); };
@@ -584,19 +583,2279 @@ function bindAllEvents() {
         setTimeout(() => targetForm.classList.remove("fade-in"), 500);
     });
 
-    document.querySelectorAll(".cat-link").forEach(l => l.onclick = (e) => {
-        e.preventDefault();
-        document.querySelectorAll(".cat-link").forEach(x => x.classList.remove("active"));
-        l.classList.add("active");
-        AppState.activeCategory = l.dataset.cat;
-        renderCatalog();
-    });
-
     document.getElementById("searchBtn")?.addEventListener("click", () => {
         AppState.searchTerm = document.getElementById("globalSearch")?.value || "";
         renderCatalog();
     });
     document.getElementById("globalSearch")?.addEventListener("keyup", debounce((e) => { AppState.searchTerm = e.target.value; renderCatalog(); }, 300));
+
+    const applyCoupon = document.getElementById("applyCouponBtn");
+    if (applyCoupon) applyCoupon.onclick = () => {
+        const code = document.getElementById("couponInput")?.value?.trim()?.toUpperCase();
+        const cupom = AppState.coupons.find(c => c.code === code);
+        if (cupom) {
+            AppState.appliedCoupon = cupom;
+            renderCartModal();
+            applyCoupon.classList.add("pulse-gold");
+            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+        } else {
+            applyCoupon.classList.remove("pulse-gold");
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        }
+    };
+}
+
+function showProfile() {
+    if (!AppState.currentUser) return;
+    const modal = document.getElementById("profileModal");
+    const content = modal.querySelector('.modal-content');
+    content.classList.add('luxury-modal');
+
+    const d = document.getElementById("profileInfo");
+    if (d) d.innerHTML = `
+        <div style="text-align:center; padding:1rem">
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.2rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 3px; font-size: 0.7rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
+            </div>
+            <i class="fas fa-check-circle bronze-check"></i>
+            <h2 style="font-family:'Playfair Display'; color:#FFF; font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2.5rem; font-style: italic;">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--bronze); margin-bottom: 5px;">Sessão Ativa</p>
+                <p style="font-weight:400; color:white; font-family:'Inter'">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem 4rem; width: auto;">OK</button>
+        </div>`;
+    openModal("profileModal");
+}
+
+window.reopenWhatsApp = (orderId) => {
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}. Pode me ajudar?`);
+    window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
+};
+
+async function showOrderHistory() {
+    if (!AppState.currentUser) return;
+    try {
+        const res = await fetch(`${API_URL}/pedidos/usuario`, { headers: { "Authorization": `Bearer ${AppState.token}` } });
+        const orders = await res.json();
+        const el = document.getElementById("historyList");
+        if (!el) return;
+        if (!orders.length) {
+            el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-history" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i><p>Sem pedidos</p></div>';
+        } else {
+            el.innerHTML = orders.map(o => `
+                <div style="background:var(--light-bg);padding:1rem;border-radius:12px;margin-bottom:0.75rem">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+                        <strong style="color:var(--primary-dark)">#${o.id||o._id?.toString().slice(-6)}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">${new Date(o.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.3rem">${o.items.length} item(s)</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-weight:700">${formatMoney(o.total)}</span>
+                        <button onclick="reopenWhatsApp('${o.id || o._id}')" class="btn-cart" style="width:auto;padding:0.3rem 0.8rem;font-size:0.7rem;background:linear-gradient(135deg,#25D366,#128C7E)">
+                            <i class="fab fa-whatsapp"></i> Contato
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+        openModal("historyModal");
+    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    document.body.classList.add("dark");
+    
+    bindAllEvents();
+    loadLocalCartFavs();
+    checkAuthToken();
+    await loadProducts();
+});
+
+    const applyCoupon = document.getElementById("applyCouponBtn");
+    if (applyCoupon) applyCoupon.onclick = () => {
+        const code = document.getElementById("couponInput")?.value?.trim()?.toUpperCase();
+        const cupom = AppState.coupons.find(c => c.code === code);
+        if (cupom) {
+            AppState.appliedCoupon = cupom;
+            renderCartModal();
+            applyCoupon.classList.add("pulse-gold");
+            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+        } else {
+            applyCoupon.classList.remove("pulse-gold");
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        }
+    };
+}
+
+function showProfile() {
+    if (!AppState.currentUser) return;
+    const modal = document.getElementById("profileModal");
+    const content = modal.querySelector('.modal-content');
+    content.classList.add('luxury-modal');
+
+    const d = document.getElementById("profileInfo");
+    if (d) d.innerHTML = `
+        <div style="text-align:center; padding:1rem">
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.2rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 3px; font-size: 0.7rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
+            </div>
+            <i class="fas fa-check-circle bronze-check"></i>
+            <h2 style="font-family:'Playfair Display'; color:#FFF; font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2.5rem; font-style: italic;">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--bronze); margin-bottom: 5px;">Sessão Ativa</p>
+                <p style="font-weight:400; color:white; font-family:'Inter'">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem 4rem; width: auto;">OK</button>
+        </div>`;
+    openModal("profileModal");
+}
+
+window.reopenWhatsApp = (orderId) => {
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}. Pode me ajudar?`);
+    window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
+};
+
+async function showOrderHistory() {
+    if (!AppState.currentUser) return;
+    try {
+        const res = await fetch(`${API_URL}/pedidos/usuario`, { headers: { "Authorization": `Bearer ${AppState.token}` } });
+        const orders = await res.json();
+        const el = document.getElementById("historyList");
+        if (!el) return;
+        if (!orders.length) {
+            el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-history" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i><p>Sem pedidos</p></div>';
+        } else {
+            el.innerHTML = orders.map(o => `
+                <div style="background:var(--light-bg);padding:1rem;border-radius:12px;margin-bottom:0.75rem">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+                        <strong style="color:var(--primary-dark)">#${o.id||o._id?.toString().slice(-6)}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">${new Date(o.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.3rem">${o.items.length} item(s)</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-weight:700">${formatMoney(o.total)}</span>
+                        <button onclick="reopenWhatsApp('${o.id || o._id}')" class="btn-cart" style="width:auto;padding:0.3rem 0.8rem;font-size:0.7rem;background:linear-gradient(135deg,#25D366,#128C7E)">
+                            <i class="fab fa-whatsapp"></i> Contato
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+        openModal("historyModal");
+    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    document.body.classList.add("dark");
+    
+    bindAllEvents();
+    loadLocalCartFavs();
+    checkAuthToken();
+    await loadProducts();
+});
+
+    const applyCoupon = document.getElementById("applyCouponBtn");
+    if (applyCoupon) applyCoupon.onclick = () => {
+        const code = document.getElementById("couponInput")?.value?.trim()?.toUpperCase();
+        const cupom = AppState.coupons.find(c => c.code === code);
+        if (cupom) {
+            AppState.appliedCoupon = cupom;
+            renderCartModal();
+            applyCoupon.classList.add("pulse-gold");
+            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+        } else {
+            applyCoupon.classList.remove("pulse-gold");
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        }
+    };
+}
+
+function showProfile() {
+    if (!AppState.currentUser) return;
+    const modal = document.getElementById("profileModal");
+    const content = modal.querySelector('.modal-content');
+    content.classList.add('luxury-modal');
+
+    const d = document.getElementById("profileInfo");
+    if (d) d.innerHTML = `
+        <div style="text-align:center; padding:1rem">
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.2rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 3px; font-size: 0.7rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
+            </div>
+            <i class="fas fa-check-circle bronze-check"></i>
+            <h2 style="font-family:'Playfair Display'; color:#FFF; font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2.5rem; font-style: italic;">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--bronze); margin-bottom: 5px;">Sessão Ativa</p>
+                <p style="font-weight:400; color:white; font-family:'Inter'">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem 4rem; width: auto;">OK</button>
+        </div>`;
+    openModal("profileModal");
+}
+
+window.reopenWhatsApp = (orderId) => {
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}. Pode me ajudar?`);
+    window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
+};
+
+async function showOrderHistory() {
+    if (!AppState.currentUser) return;
+    try {
+        const res = await fetch(`${API_URL}/pedidos/usuario`, { headers: { "Authorization": `Bearer ${AppState.token}` } });
+        const orders = await res.json();
+        const el = document.getElementById("historyList");
+        if (!el) return;
+        if (!orders.length) {
+            el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-history" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i><p>Sem pedidos</p></div>';
+        } else {
+            el.innerHTML = orders.map(o => `
+                <div style="background:var(--light-bg);padding:1rem;border-radius:12px;margin-bottom:0.75rem">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+                        <strong style="color:var(--primary-dark)">#${o.id||o._id?.toString().slice(-6)}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">${new Date(o.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.3rem">${o.items.length} item(s)</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-weight:700">${formatMoney(o.total)}</span>
+                        <button onclick="reopenWhatsApp('${o.id || o._id}')" class="btn-cart" style="width:auto;padding:0.3rem 0.8rem;font-size:0.7rem;background:linear-gradient(135deg,#25D366,#128C7E)">
+                            <i class="fab fa-whatsapp"></i> Contato
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+        openModal("historyModal");
+    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    document.body.classList.add("dark");
+    
+    bindAllEvents();
+    loadLocalCartFavs();
+    checkAuthToken();
+    await loadProducts();
+});
+
+    const applyCoupon = document.getElementById("applyCouponBtn");
+    if (applyCoupon) applyCoupon.onclick = () => {
+        const code = document.getElementById("couponInput")?.value?.trim()?.toUpperCase();
+        const cupom = AppState.coupons.find(c => c.code === code);
+        if (cupom) {
+            AppState.appliedCoupon = cupom;
+            renderCartModal();
+            applyCoupon.classList.add("pulse-gold");
+            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+        } else {
+            applyCoupon.classList.remove("pulse-gold");
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        }
+    };
+}
+
+function showProfile() {
+    if (!AppState.currentUser) return;
+    const modal = document.getElementById("profileModal");
+    const content = modal.querySelector('.modal-content');
+    content.classList.add('luxury-modal');
+
+    const d = document.getElementById("profileInfo");
+    if (d) d.innerHTML = `
+        <div style="text-align:center; padding:1rem">
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.2rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 3px; font-size: 0.7rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
+            </div>
+            <i class="fas fa-check-circle bronze-check"></i>
+            <h2 style="font-family:'Playfair Display'; color:#FFF; font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2.5rem; font-style: italic;">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--bronze); margin-bottom: 5px;">Sessão Ativa</p>
+                <p style="font-weight:400; color:white; font-family:'Inter'">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem 4rem; width: auto;">OK</button>
+        </div>`;
+    openModal("profileModal");
+}
+
+window.reopenWhatsApp = (orderId) => {
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}. Pode me ajudar?`);
+    window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
+};
+
+async function showOrderHistory() {
+    if (!AppState.currentUser) return;
+    try {
+        const res = await fetch(`${API_URL}/pedidos/usuario`, { headers: { "Authorization": `Bearer ${AppState.token}` } });
+        const orders = await res.json();
+        const el = document.getElementById("historyList");
+        if (!el) return;
+        if (!orders.length) {
+            el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-history" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i><p>Sem pedidos</p></div>';
+        } else {
+            el.innerHTML = orders.map(o => `
+                <div style="background:var(--light-bg);padding:1rem;border-radius:12px;margin-bottom:0.75rem">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+                        <strong style="color:var(--primary-dark)">#${o.id||o._id?.toString().slice(-6)}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">${new Date(o.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.3rem">${o.items.length} item(s)</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-weight:700">${formatMoney(o.total)}</span>
+                        <button onclick="reopenWhatsApp('${o.id || o._id}')" class="btn-cart" style="width:auto;padding:0.3rem 0.8rem;font-size:0.7rem;background:linear-gradient(135deg,#25D366,#128C7E)">
+                            <i class="fab fa-whatsapp"></i> Contato
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+        openModal("historyModal");
+    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    document.body.classList.add("dark");
+    
+    bindAllEvents();
+    loadLocalCartFavs();
+    checkAuthToken();
+    await loadProducts();
+});
+
+    const applyCoupon = document.getElementById("applyCouponBtn");
+    if (applyCoupon) applyCoupon.onclick = () => {
+        const code = document.getElementById("couponInput")?.value?.trim()?.toUpperCase();
+        const cupom = AppState.coupons.find(c => c.code === code);
+        if (cupom) {
+            AppState.appliedCoupon = cupom;
+            renderCartModal();
+            applyCoupon.classList.add("pulse-gold");
+            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+        } else {
+            applyCoupon.classList.remove("pulse-gold");
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        }
+    };
+}
+
+function showProfile() {
+    if (!AppState.currentUser) return;
+    const modal = document.getElementById("profileModal");
+    const content = modal.querySelector('.modal-content');
+    content.classList.add('luxury-modal');
+
+    const d = document.getElementById("profileInfo");
+    if (d) d.innerHTML = `
+        <div style="text-align:center; padding:1rem">
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.2rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 3px; font-size: 0.7rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
+            </div>
+            <i class="fas fa-check-circle bronze-check"></i>
+            <h2 style="font-family:'Playfair Display'; color:#FFF; font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2.5rem; font-style: italic;">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--bronze); margin-bottom: 5px;">Sessão Ativa</p>
+                <p style="font-weight:400; color:white; font-family:'Inter'">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem 4rem; width: auto;">OK</button>
+        </div>`;
+    openModal("profileModal");
+}
+
+window.reopenWhatsApp = (orderId) => {
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}. Pode me ajudar?`);
+    window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
+};
+
+async function showOrderHistory() {
+    if (!AppState.currentUser) return;
+    try {
+        const res = await fetch(`${API_URL}/pedidos/usuario`, { headers: { "Authorization": `Bearer ${AppState.token}` } });
+        const orders = await res.json();
+        const el = document.getElementById("historyList");
+        if (!el) return;
+        if (!orders.length) {
+            el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-history" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i><p>Sem pedidos</p></div>';
+        } else {
+            el.innerHTML = orders.map(o => `
+                <div style="background:var(--light-bg);padding:1rem;border-radius:12px;margin-bottom:0.75rem">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+                        <strong style="color:var(--primary-dark)">#${o.id||o._id?.toString().slice(-6)}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">${new Date(o.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.3rem">${o.items.length} item(s)</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-weight:700">${formatMoney(o.total)}</span>
+                        <button onclick="reopenWhatsApp('${o.id || o._id}')" class="btn-cart" style="width:auto;padding:0.3rem 0.8rem;font-size:0.7rem;background:linear-gradient(135deg,#25D366,#128C7E)">
+                            <i class="fab fa-whatsapp"></i> Contato
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+        openModal("historyModal");
+    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    document.body.classList.add("dark");
+    
+    bindAllEvents();
+    loadLocalCartFavs();
+    checkAuthToken();
+    await loadProducts();
+});
+
+    const applyCoupon = document.getElementById("applyCouponBtn");
+    if (applyCoupon) applyCoupon.onclick = () => {
+        const code = document.getElementById("couponInput")?.value?.trim()?.toUpperCase();
+        const cupom = AppState.coupons.find(c => c.code === code);
+        if (cupom) {
+            AppState.appliedCoupon = cupom;
+            renderCartModal();
+            applyCoupon.classList.add("pulse-gold");
+            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+        } else {
+            applyCoupon.classList.remove("pulse-gold");
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        }
+    };
+}
+
+function showProfile() {
+    if (!AppState.currentUser) return;
+    const modal = document.getElementById("profileModal");
+    const content = modal.querySelector('.modal-content');
+    content.classList.add('luxury-modal');
+
+    const d = document.getElementById("profileInfo");
+    if (d) d.innerHTML = `
+        <div style="text-align:center; padding:1rem">
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.2rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 3px; font-size: 0.7rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
+            </div>
+            <i class="fas fa-check-circle bronze-check"></i>
+            <h2 style="font-family:'Playfair Display'; color:#FFF; font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2.5rem; font-style: italic;">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--bronze); margin-bottom: 5px;">Sessão Ativa</p>
+                <p style="font-weight:400; color:white; font-family:'Inter'">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem 4rem; width: auto;">OK</button>
+        </div>`;
+    openModal("profileModal");
+}
+
+window.reopenWhatsApp = (orderId) => {
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}. Pode me ajudar?`);
+    window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
+};
+
+async function showOrderHistory() {
+    if (!AppState.currentUser) return;
+    try {
+        const res = await fetch(`${API_URL}/pedidos/usuario`, { headers: { "Authorization": `Bearer ${AppState.token}` } });
+        const orders = await res.json();
+        const el = document.getElementById("historyList");
+        if (!el) return;
+        if (!orders.length) {
+            el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-history" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i><p>Sem pedidos</p></div>';
+        } else {
+            el.innerHTML = orders.map(o => `
+                <div style="background:var(--light-bg);padding:1rem;border-radius:12px;margin-bottom:0.75rem">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+                        <strong style="color:var(--primary-dark)">#${o.id||o._id?.toString().slice(-6)}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">${new Date(o.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.3rem">${o.items.length} item(s)</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-weight:700">${formatMoney(o.total)}</span>
+                        <button onclick="reopenWhatsApp('${o.id || o._id}')" class="btn-cart" style="width:auto;padding:0.3rem 0.8rem;font-size:0.7rem;background:linear-gradient(135deg,#25D366,#128C7E)">
+                            <i class="fab fa-whatsapp"></i> Contato
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+        openModal("historyModal");
+    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    document.body.classList.add("dark");
+    
+    bindAllEvents();
+    loadLocalCartFavs();
+    checkAuthToken();
+    await loadProducts();
+});
+
+    const applyCoupon = document.getElementById("applyCouponBtn");
+    if (applyCoupon) applyCoupon.onclick = () => {
+        const code = document.getElementById("couponInput")?.value?.trim()?.toUpperCase();
+        const cupom = AppState.coupons.find(c => c.code === code);
+        if (cupom) {
+            AppState.appliedCoupon = cupom;
+            renderCartModal();
+            applyCoupon.classList.add("pulse-gold");
+            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+        } else {
+            applyCoupon.classList.remove("pulse-gold");
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        }
+    };
+}
+
+function showProfile() {
+    if (!AppState.currentUser) return;
+    const modal = document.getElementById("profileModal");
+    const content = modal.querySelector('.modal-content');
+    content.classList.add('luxury-modal');
+
+    const d = document.getElementById("profileInfo");
+    if (d) d.innerHTML = `
+        <div style="text-align:center; padding:1rem">
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.2rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 3px; font-size: 0.7rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
+            </div>
+            <i class="fas fa-check-circle bronze-check"></i>
+            <h2 style="font-family:'Playfair Display'; color:#FFF; font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2.5rem; font-style: italic;">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--bronze); margin-bottom: 5px;">Sessão Ativa</p>
+                <p style="font-weight:400; color:white; font-family:'Inter'">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem 4rem; width: auto;">OK</button>
+        </div>`;
+    openModal("profileModal");
+}
+
+window.reopenWhatsApp = (orderId) => {
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}. Pode me ajudar?`);
+    window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
+};
+
+async function showOrderHistory() {
+    if (!AppState.currentUser) return;
+    try {
+        const res = await fetch(`${API_URL}/pedidos/usuario`, { headers: { "Authorization": `Bearer ${AppState.token}` } });
+        const orders = await res.json();
+        const el = document.getElementById("historyList");
+        if (!el) return;
+        if (!orders.length) {
+            el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-history" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i><p>Sem pedidos</p></div>';
+        } else {
+            el.innerHTML = orders.map(o => `
+                <div style="background:var(--light-bg);padding:1rem;border-radius:12px;margin-bottom:0.75rem">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+                        <strong style="color:var(--primary-dark)">#${o.id||o._id?.toString().slice(-6)}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">${new Date(o.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.3rem">${o.items.length} item(s)</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-weight:700">${formatMoney(o.total)}</span>
+                        <button onclick="reopenWhatsApp('${o.id || o._id}')" class="btn-cart" style="width:auto;padding:0.3rem 0.8rem;font-size:0.7rem;background:linear-gradient(135deg,#25D366,#128C7E)">
+                            <i class="fab fa-whatsapp"></i> Contato
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+        openModal("historyModal");
+    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    document.body.classList.add("dark");
+    
+    bindAllEvents();
+    loadLocalCartFavs();
+    checkAuthToken();
+    await loadProducts();
+});
+
+    const applyCoupon = document.getElementById("applyCouponBtn");
+    if (applyCoupon) applyCoupon.onclick = () => {
+        const code = document.getElementById("couponInput")?.value?.trim()?.toUpperCase();
+        const cupom = AppState.coupons.find(c => c.code === code);
+        if (cupom) {
+            AppState.appliedCoupon = cupom;
+            renderCartModal();
+            applyCoupon.classList.add("pulse-gold");
+            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+        } else {
+            applyCoupon.classList.remove("pulse-gold");
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        }
+    };
+}
+
+function showProfile() {
+    if (!AppState.currentUser) return;
+    const modal = document.getElementById("profileModal");
+    const content = modal.querySelector('.modal-content');
+    content.classList.add('luxury-modal');
+
+    const d = document.getElementById("profileInfo");
+    if (d) d.innerHTML = `
+        <div style="text-align:center; padding:1rem">
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.2rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 3px; font-size: 0.7rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
+            </div>
+            <i class="fas fa-check-circle bronze-check"></i>
+            <h2 style="font-family:'Playfair Display'; color:#FFF; font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2.5rem; font-style: italic;">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--bronze); margin-bottom: 5px;">Sessão Ativa</p>
+                <p style="font-weight:400; color:white; font-family:'Inter'">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem 4rem; width: auto;">OK</button>
+        </div>`;
+    openModal("profileModal");
+}
+
+window.reopenWhatsApp = (orderId) => {
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}. Pode me ajudar?`);
+    window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
+};
+
+async function showOrderHistory() {
+    if (!AppState.currentUser) return;
+    try {
+        const res = await fetch(`${API_URL}/pedidos/usuario`, { headers: { "Authorization": `Bearer ${AppState.token}` } });
+        const orders = await res.json();
+        const el = document.getElementById("historyList");
+        if (!el) return;
+        if (!orders.length) {
+            el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-history" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i><p>Sem pedidos</p></div>';
+        } else {
+            el.innerHTML = orders.map(o => `
+                <div style="background:var(--light-bg);padding:1rem;border-radius:12px;margin-bottom:0.75rem">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+                        <strong style="color:var(--primary-dark)">#${o.id||o._id?.toString().slice(-6)}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">${new Date(o.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.3rem">${o.items.length} item(s)</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-weight:700">${formatMoney(o.total)}</span>
+                        <button onclick="reopenWhatsApp('${o.id || o._id}')" class="btn-cart" style="width:auto;padding:0.3rem 0.8rem;font-size:0.7rem;background:linear-gradient(135deg,#25D366,#128C7E)">
+                            <i class="fab fa-whatsapp"></i> Contato
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+        openModal("historyModal");
+    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    document.body.classList.add("dark");
+    
+    bindAllEvents();
+    loadLocalCartFavs();
+    checkAuthToken();
+    await loadProducts();
+});
+
+    const applyCoupon = document.getElementById("applyCouponBtn");
+    if (applyCoupon) applyCoupon.onclick = () => {
+        const code = document.getElementById("couponInput")?.value?.trim()?.toUpperCase();
+        const cupom = AppState.coupons.find(c => c.code === code);
+        if (cupom) {
+            AppState.appliedCoupon = cupom;
+            renderCartModal();
+            applyCoupon.classList.add("pulse-gold");
+            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+        } else {
+            applyCoupon.classList.remove("pulse-gold");
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        }
+    };
+}
+
+function showProfile() {
+    if (!AppState.currentUser) return;
+    const modal = document.getElementById("profileModal");
+    const content = modal.querySelector('.modal-content');
+    content.classList.add('luxury-modal');
+
+    const d = document.getElementById("profileInfo");
+    if (d) d.innerHTML = `
+        <div style="text-align:center; padding:1rem">
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.2rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 3px; font-size: 0.7rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
+            </div>
+            <i class="fas fa-check-circle bronze-check"></i>
+            <h2 style="font-family:'Playfair Display'; color:#FFF; font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2.5rem; font-style: italic;">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--bronze); margin-bottom: 5px;">Sessão Ativa</p>
+                <p style="font-weight:400; color:white; font-family:'Inter'">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem 4rem; width: auto;">OK</button>
+        </div>`;
+    openModal("profileModal");
+}
+
+window.reopenWhatsApp = (orderId) => {
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}. Pode me ajudar?`);
+    window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
+};
+
+async function showOrderHistory() {
+    if (!AppState.currentUser) return;
+    try {
+        const res = await fetch(`${API_URL}/pedidos/usuario`, { headers: { "Authorization": `Bearer ${AppState.token}` } });
+        const orders = await res.json();
+        const el = document.getElementById("historyList");
+        if (!el) return;
+        if (!orders.length) {
+            el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-history" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i><p>Sem pedidos</p></div>';
+        } else {
+            el.innerHTML = orders.map(o => `
+                <div style="background:var(--light-bg);padding:1rem;border-radius:12px;margin-bottom:0.75rem">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+                        <strong style="color:var(--primary-dark)">#${o.id||o._id?.toString().slice(-6)}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">${new Date(o.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.3rem">${o.items.length} item(s)</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-weight:700">${formatMoney(o.total)}</span>
+                        <button onclick="reopenWhatsApp('${o.id || o._id}')" class="btn-cart" style="width:auto;padding:0.3rem 0.8rem;font-size:0.7rem;background:linear-gradient(135deg,#25D366,#128C7E)">
+                            <i class="fab fa-whatsapp"></i> Contato
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+        openModal("historyModal");
+    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    document.body.classList.add("dark");
+    
+    bindAllEvents();
+    loadLocalCartFavs();
+    checkAuthToken();
+    await loadProducts();
+});
+
+    const applyCoupon = document.getElementById("applyCouponBtn");
+    if (applyCoupon) applyCoupon.onclick = () => {
+        const code = document.getElementById("couponInput")?.value?.trim()?.toUpperCase();
+        const cupom = AppState.coupons.find(c => c.code === code);
+        if (cupom) {
+            AppState.appliedCoupon = cupom;
+            renderCartModal();
+            applyCoupon.classList.add("pulse-gold");
+            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+        } else {
+            applyCoupon.classList.remove("pulse-gold");
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        }
+    };
+}
+
+function showProfile() {
+    if (!AppState.currentUser) return;
+    const modal = document.getElementById("profileModal");
+    const content = modal.querySelector('.modal-content');
+    content.classList.add('luxury-modal');
+
+    const d = document.getElementById("profileInfo");
+    if (d) d.innerHTML = `
+        <div style="text-align:center; padding:1rem">
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.2rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 3px; font-size: 0.7rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
+            </div>
+            <i class="fas fa-check-circle bronze-check"></i>
+            <h2 style="font-family:'Playfair Display'; color:#FFF; font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2.5rem; font-style: italic;">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--bronze); margin-bottom: 5px;">Sessão Ativa</p>
+                <p style="font-weight:400; color:white; font-family:'Inter'">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem 4rem; width: auto;">OK</button>
+        </div>`;
+    openModal("profileModal");
+}
+
+window.reopenWhatsApp = (orderId) => {
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}. Pode me ajudar?`);
+    window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
+};
+
+async function showOrderHistory() {
+    if (!AppState.currentUser) return;
+    try {
+        const res = await fetch(`${API_URL}/pedidos/usuario`, { headers: { "Authorization": `Bearer ${AppState.token}` } });
+        const orders = await res.json();
+        const el = document.getElementById("historyList");
+        if (!el) return;
+        if (!orders.length) {
+            el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-history" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i><p>Sem pedidos</p></div>';
+        } else {
+            el.innerHTML = orders.map(o => `
+                <div style="background:var(--light-bg);padding:1rem;border-radius:12px;margin-bottom:0.75rem">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+                        <strong style="color:var(--primary-dark)">#${o.id||o._id?.toString().slice(-6)}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">${new Date(o.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.3rem">${o.items.length} item(s)</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-weight:700">${formatMoney(o.total)}</span>
+                        <button onclick="reopenWhatsApp('${o.id || o._id}')" class="btn-cart" style="width:auto;padding:0.3rem 0.8rem;font-size:0.7rem;background:linear-gradient(135deg,#25D366,#128C7E)">
+                            <i class="fab fa-whatsapp"></i> Contato
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+        openModal("historyModal");
+    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    document.body.classList.add("dark");
+    
+    bindAllEvents();
+    loadLocalCartFavs();
+    checkAuthToken();
+    await loadProducts();
+});
+
+    const applyCoupon = document.getElementById("applyCouponBtn");
+    if (applyCoupon) applyCoupon.onclick = () => {
+        const code = document.getElementById("couponInput")?.value?.trim()?.toUpperCase();
+        const cupom = AppState.coupons.find(c => c.code === code);
+        if (cupom) {
+            AppState.appliedCoupon = cupom;
+            renderCartModal();
+            applyCoupon.classList.add("pulse-gold");
+            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+        } else {
+            applyCoupon.classList.remove("pulse-gold");
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        }
+    };
+}
+
+function showProfile() {
+    if (!AppState.currentUser) return;
+    const modal = document.getElementById("profileModal");
+    const content = modal.querySelector('.modal-content');
+    content.classList.add('luxury-modal');
+
+    const d = document.getElementById("profileInfo");
+    if (d) d.innerHTML = `
+        <div style="text-align:center; padding:1rem">
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.2rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 3px; font-size: 0.7rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
+            </div>
+            <i class="fas fa-check-circle bronze-check"></i>
+            <h2 style="font-family:'Playfair Display'; color:#FFF; font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2.5rem; font-style: italic;">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--bronze); margin-bottom: 5px;">Sessão Ativa</p>
+                <p style="font-weight:400; color:white; font-family:'Inter'">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem 4rem; width: auto;">OK</button>
+        </div>`;
+    openModal("profileModal");
+}
+
+window.reopenWhatsApp = (orderId) => {
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}. Pode me ajudar?`);
+    window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
+};
+
+async function showOrderHistory() {
+    if (!AppState.currentUser) return;
+    try {
+        const res = await fetch(`${API_URL}/pedidos/usuario`, { headers: { "Authorization": `Bearer ${AppState.token}` } });
+        const orders = await res.json();
+        const el = document.getElementById("historyList");
+        if (!el) return;
+        if (!orders.length) {
+            el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-history" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i><p>Sem pedidos</p></div>';
+        } else {
+            el.innerHTML = orders.map(o => `
+                <div style="background:var(--light-bg);padding:1rem;border-radius:12px;margin-bottom:0.75rem">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+                        <strong style="color:var(--primary-dark)">#${o.id||o._id?.toString().slice(-6)}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">${new Date(o.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.3rem">${o.items.length} item(s)</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-weight:700">${formatMoney(o.total)}</span>
+                        <button onclick="reopenWhatsApp('${o.id || o._id}')" class="btn-cart" style="width:auto;padding:0.3rem 0.8rem;font-size:0.7rem;background:linear-gradient(135deg,#25D366,#128C7E)">
+                            <i class="fab fa-whatsapp"></i> Contato
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+        openModal("historyModal");
+    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    document.body.classList.add("dark");
+    
+    bindAllEvents();
+    loadLocalCartFavs();
+    checkAuthToken();
+    await loadProducts();
+});
+
+    const applyCoupon = document.getElementById("applyCouponBtn");
+    if (applyCoupon) applyCoupon.onclick = () => {
+        const code = document.getElementById("couponInput")?.value?.trim()?.toUpperCase();
+        const cupom = AppState.coupons.find(c => c.code === code);
+        if (cupom) {
+            AppState.appliedCoupon = cupom;
+            renderCartModal();
+            applyCoupon.classList.add("pulse-gold");
+            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+        } else {
+            applyCoupon.classList.remove("pulse-gold");
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        }
+    };
+}
+
+function showProfile() {
+    if (!AppState.currentUser) return;
+    const modal = document.getElementById("profileModal");
+    const content = modal.querySelector('.modal-content');
+    content.classList.add('luxury-modal');
+
+    const d = document.getElementById("profileInfo");
+    if (d) d.innerHTML = `
+        <div style="text-align:center; padding:1rem">
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.2rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 3px; font-size: 0.7rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
+            </div>
+            <i class="fas fa-check-circle bronze-check"></i>
+            <h2 style="font-family:'Playfair Display'; color:#FFF; font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2.5rem; font-style: italic;">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--bronze); margin-bottom: 5px;">Sessão Ativa</p>
+                <p style="font-weight:400; color:white; font-family:'Inter'">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem 4rem; width: auto;">OK</button>
+        </div>`;
+    openModal("profileModal");
+}
+
+window.reopenWhatsApp = (orderId) => {
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}. Pode me ajudar?`);
+    window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
+};
+
+async function showOrderHistory() {
+    if (!AppState.currentUser) return;
+    try {
+        const res = await fetch(`${API_URL}/pedidos/usuario`, { headers: { "Authorization": `Bearer ${AppState.token}` } });
+        const orders = await res.json();
+        const el = document.getElementById("historyList");
+        if (!el) return;
+        if (!orders.length) {
+            el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-history" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i><p>Sem pedidos</p></div>';
+        } else {
+            el.innerHTML = orders.map(o => `
+                <div style="background:var(--light-bg);padding:1rem;border-radius:12px;margin-bottom:0.75rem">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+                        <strong style="color:var(--primary-dark)">#${o.id||o._id?.toString().slice(-6)}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">${new Date(o.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.3rem">${o.items.length} item(s)</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-weight:700">${formatMoney(o.total)}</span>
+                        <button onclick="reopenWhatsApp('${o.id || o._id}')" class="btn-cart" style="width:auto;padding:0.3rem 0.8rem;font-size:0.7rem;background:linear-gradient(135deg,#25D366,#128C7E)">
+                            <i class="fab fa-whatsapp"></i> Contato
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+        openModal("historyModal");
+    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    document.body.classList.add("dark");
+    
+    bindAllEvents();
+    loadLocalCartFavs();
+    checkAuthToken();
+    await loadProducts();
+});
+
+    const applyCoupon = document.getElementById("applyCouponBtn");
+    if (applyCoupon) applyCoupon.onclick = () => {
+        const code = document.getElementById("couponInput")?.value?.trim()?.toUpperCase();
+        const cupom = AppState.coupons.find(c => c.code === code);
+        if (cupom) {
+            AppState.appliedCoupon = cupom;
+            renderCartModal();
+            applyCoupon.classList.add("pulse-gold");
+            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+        } else {
+            applyCoupon.classList.remove("pulse-gold");
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        }
+    };
+}
+
+function showProfile() {
+    if (!AppState.currentUser) return;
+    const modal = document.getElementById("profileModal");
+    const content = modal.querySelector('.modal-content');
+    content.classList.add('luxury-modal');
+
+    const d = document.getElementById("profileInfo");
+    if (d) d.innerHTML = `
+        <div style="text-align:center; padding:1rem">
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.2rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 3px; font-size: 0.7rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
+            </div>
+            <i class="fas fa-check-circle bronze-check"></i>
+            <h2 style="font-family:'Playfair Display'; color:#FFF; font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2.5rem; font-style: italic;">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--bronze); margin-bottom: 5px;">Sessão Ativa</p>
+                <p style="font-weight:400; color:white; font-family:'Inter'">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem 4rem; width: auto;">OK</button>
+        </div>`;
+    openModal("profileModal");
+}
+
+window.reopenWhatsApp = (orderId) => {
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}. Pode me ajudar?`);
+    window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
+};
+
+async function showOrderHistory() {
+    if (!AppState.currentUser) return;
+    try {
+        const res = await fetch(`${API_URL}/pedidos/usuario`, { headers: { "Authorization": `Bearer ${AppState.token}` } });
+        const orders = await res.json();
+        const el = document.getElementById("historyList");
+        if (!el) return;
+        if (!orders.length) {
+            el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-history" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i><p>Sem pedidos</p></div>';
+        } else {
+            el.innerHTML = orders.map(o => `
+                <div style="background:var(--light-bg);padding:1rem;border-radius:12px;margin-bottom:0.75rem">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+                        <strong style="color:var(--primary-dark)">#${o.id||o._id?.toString().slice(-6)}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">${new Date(o.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.3rem">${o.items.length} item(s)</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-weight:700">${formatMoney(o.total)}</span>
+                        <button onclick="reopenWhatsApp('${o.id || o._id}')" class="btn-cart" style="width:auto;padding:0.3rem 0.8rem;font-size:0.7rem;background:linear-gradient(135deg,#25D366,#128C7E)">
+                            <i class="fab fa-whatsapp"></i> Contato
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+        openModal("historyModal");
+    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    document.body.classList.add("dark");
+    
+    bindAllEvents();
+    loadLocalCartFavs();
+    checkAuthToken();
+    await loadProducts();
+});
+
+    const applyCoupon = document.getElementById("applyCouponBtn");
+    if (applyCoupon) applyCoupon.onclick = () => {
+        const code = document.getElementById("couponInput")?.value?.trim()?.toUpperCase();
+        const cupom = AppState.coupons.find(c => c.code === code);
+        if (cupom) {
+            AppState.appliedCoupon = cupom;
+            renderCartModal();
+            applyCoupon.classList.add("pulse-gold");
+            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+        } else {
+            applyCoupon.classList.remove("pulse-gold");
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        }
+    };
+}
+
+function showProfile() {
+    if (!AppState.currentUser) return;
+    const modal = document.getElementById("profileModal");
+    const content = modal.querySelector('.modal-content');
+    content.classList.add('luxury-modal');
+
+    const d = document.getElementById("profileInfo");
+    if (d) d.innerHTML = `
+        <div style="text-align:center; padding:1rem">
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.2rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 3px; font-size: 0.7rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
+            </div>
+            <i class="fas fa-check-circle bronze-check"></i>
+            <h2 style="font-family:'Playfair Display'; color:#FFF; font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2.5rem; font-style: italic;">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--bronze); margin-bottom: 5px;">Sessão Ativa</p>
+                <p style="font-weight:400; color:white; font-family:'Inter'">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem 4rem; width: auto;">OK</button>
+        </div>`;
+    openModal("profileModal");
+}
+
+window.reopenWhatsApp = (orderId) => {
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}. Pode me ajudar?`);
+    window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
+};
+
+async function showOrderHistory() {
+    if (!AppState.currentUser) return;
+    try {
+        const res = await fetch(`${API_URL}/pedidos/usuario`, { headers: { "Authorization": `Bearer ${AppState.token}` } });
+        const orders = await res.json();
+        const el = document.getElementById("historyList");
+        if (!el) return;
+        if (!orders.length) {
+            el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-history" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i><p>Sem pedidos</p></div>';
+        } else {
+            el.innerHTML = orders.map(o => `
+                <div style="background:var(--light-bg);padding:1rem;border-radius:12px;margin-bottom:0.75rem">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+                        <strong style="color:var(--primary-dark)">#${o.id||o._id?.toString().slice(-6)}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">${new Date(o.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.3rem">${o.items.length} item(s)</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-weight:700">${formatMoney(o.total)}</span>
+                        <button onclick="reopenWhatsApp('${o.id || o._id}')" class="btn-cart" style="width:auto;padding:0.3rem 0.8rem;font-size:0.7rem;background:linear-gradient(135deg,#25D366,#128C7E)">
+                            <i class="fab fa-whatsapp"></i> Contato
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+        openModal("historyModal");
+    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    document.body.classList.add("dark");
+    
+    bindAllEvents();
+    loadLocalCartFavs();
+    checkAuthToken();
+    await loadProducts();
+});
+
+    const applyCoupon = document.getElementById("applyCouponBtn");
+    if (applyCoupon) applyCoupon.onclick = () => {
+        const code = document.getElementById("couponInput")?.value?.trim()?.toUpperCase();
+        const cupom = AppState.coupons.find(c => c.code === code);
+        if (cupom) {
+            AppState.appliedCoupon = cupom;
+            renderCartModal();
+            applyCoupon.classList.add("pulse-gold");
+            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+        } else {
+            applyCoupon.classList.remove("pulse-gold");
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        }
+    };
+}
+
+function showProfile() {
+    if (!AppState.currentUser) return;
+    const modal = document.getElementById("profileModal");
+    const content = modal.querySelector('.modal-content');
+    content.classList.add('luxury-modal');
+
+    const d = document.getElementById("profileInfo");
+    if (d) d.innerHTML = `
+        <div style="text-align:center; padding:1rem">
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.2rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 3px; font-size: 0.7rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
+            </div>
+            <i class="fas fa-check-circle bronze-check"></i>
+            <h2 style="font-family:'Playfair Display'; color:#FFF; font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2.5rem; font-style: italic;">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--bronze); margin-bottom: 5px;">Sessão Ativa</p>
+                <p style="font-weight:400; color:white; font-family:'Inter'">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem 4rem; width: auto;">OK</button>
+        </div>`;
+    openModal("profileModal");
+}
+
+window.reopenWhatsApp = (orderId) => {
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}. Pode me ajudar?`);
+    window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
+};
+
+async function showOrderHistory() {
+    if (!AppState.currentUser) return;
+    try {
+        const res = await fetch(`${API_URL}/pedidos/usuario`, { headers: { "Authorization": `Bearer ${AppState.token}` } });
+        const orders = await res.json();
+        const el = document.getElementById("historyList");
+        if (!el) return;
+        if (!orders.length) {
+            el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-history" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i><p>Sem pedidos</p></div>';
+        } else {
+            el.innerHTML = orders.map(o => `
+                <div style="background:var(--light-bg);padding:1rem;border-radius:12px;margin-bottom:0.75rem">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+                        <strong style="color:var(--primary-dark)">#${o.id||o._id?.toString().slice(-6)}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">${new Date(o.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.3rem">${o.items.length} item(s)</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-weight:700">${formatMoney(o.total)}</span>
+                        <button onclick="reopenWhatsApp('${o.id || o._id}')" class="btn-cart" style="width:auto;padding:0.3rem 0.8rem;font-size:0.7rem;background:linear-gradient(135deg,#25D366,#128C7E)">
+                            <i class="fab fa-whatsapp"></i> Contato
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+        openModal("historyModal");
+    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    document.body.classList.add("dark");
+    
+    bindAllEvents();
+    loadLocalCartFavs();
+    checkAuthToken();
+    await loadProducts();
+});
+
+    const applyCoupon = document.getElementById("applyCouponBtn");
+    if (applyCoupon) applyCoupon.onclick = () => {
+        const code = document.getElementById("couponInput")?.value?.trim()?.toUpperCase();
+        const cupom = AppState.coupons.find(c => c.code === code);
+        if (cupom) {
+            AppState.appliedCoupon = cupom;
+            renderCartModal();
+            applyCoupon.classList.add("pulse-gold");
+            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+        } else {
+            applyCoupon.classList.remove("pulse-gold");
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        }
+    };
+}
+
+function showProfile() {
+    if (!AppState.currentUser) return;
+    const modal = document.getElementById("profileModal");
+    const content = modal.querySelector('.modal-content');
+    content.classList.add('luxury-modal');
+
+    const d = document.getElementById("profileInfo");
+    if (d) d.innerHTML = `
+        <div style="text-align:center; padding:1rem">
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.2rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 3px; font-size: 0.7rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
+            </div>
+            <i class="fas fa-check-circle bronze-check"></i>
+            <h2 style="font-family:'Playfair Display'; color:#FFF; font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2.5rem; font-style: italic;">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--bronze); margin-bottom: 5px;">Sessão Ativa</p>
+                <p style="font-weight:400; color:white; font-family:'Inter'">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem 4rem; width: auto;">OK</button>
+        </div>`;
+    openModal("profileModal");
+}
+
+window.reopenWhatsApp = (orderId) => {
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}. Pode me ajudar?`);
+    window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
+};
+
+async function showOrderHistory() {
+    if (!AppState.currentUser) return;
+    try {
+        const res = await fetch(`${API_URL}/pedidos/usuario`, { headers: { "Authorization": `Bearer ${AppState.token}` } });
+        const orders = await res.json();
+        const el = document.getElementById("historyList");
+        if (!el) return;
+        if (!orders.length) {
+            el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-history" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i><p>Sem pedidos</p></div>';
+        } else {
+            el.innerHTML = orders.map(o => `
+                <div style="background:var(--light-bg);padding:1rem;border-radius:12px;margin-bottom:0.75rem">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+                        <strong style="color:var(--primary-dark)">#${o.id||o._id?.toString().slice(-6)}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">${new Date(o.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.3rem">${o.items.length} item(s)</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-weight:700">${formatMoney(o.total)}</span>
+                        <button onclick="reopenWhatsApp('${o.id || o._id}')" class="btn-cart" style="width:auto;padding:0.3rem 0.8rem;font-size:0.7rem;background:linear-gradient(135deg,#25D366,#128C7E)">
+                            <i class="fab fa-whatsapp"></i> Contato
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+        openModal("historyModal");
+    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    document.body.classList.add("dark");
+    
+    bindAllEvents();
+    loadLocalCartFavs();
+    checkAuthToken();
+    await loadProducts();
+});
+
+    const applyCoupon = document.getElementById("applyCouponBtn");
+    if (applyCoupon) applyCoupon.onclick = () => {
+        const code = document.getElementById("couponInput")?.value?.trim()?.toUpperCase();
+        const cupom = AppState.coupons.find(c => c.code === code);
+        if (cupom) {
+            AppState.appliedCoupon = cupom;
+            renderCartModal();
+            applyCoupon.classList.add("pulse-gold");
+            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+        } else {
+            applyCoupon.classList.remove("pulse-gold");
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        }
+    };
+}
+
+function showProfile() {
+    if (!AppState.currentUser) return;
+    const modal = document.getElementById("profileModal");
+    const content = modal.querySelector('.modal-content');
+    content.classList.add('luxury-modal');
+
+    const d = document.getElementById("profileInfo");
+    if (d) d.innerHTML = `
+        <div style="text-align:center; padding:1rem">
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.2rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 3px; font-size: 0.7rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
+            </div>
+            <i class="fas fa-check-circle bronze-check"></i>
+            <h2 style="font-family:'Playfair Display'; color:#FFF; font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2.5rem; font-style: italic;">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--bronze); margin-bottom: 5px;">Sessão Ativa</p>
+                <p style="font-weight:400; color:white; font-family:'Inter'">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem 4rem; width: auto;">OK</button>
+        </div>`;
+    openModal("profileModal");
+}
+
+window.reopenWhatsApp = (orderId) => {
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}. Pode me ajudar?`);
+    window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
+};
+
+async function showOrderHistory() {
+    if (!AppState.currentUser) return;
+    try {
+        const res = await fetch(`${API_URL}/pedidos/usuario`, { headers: { "Authorization": `Bearer ${AppState.token}` } });
+        const orders = await res.json();
+        const el = document.getElementById("historyList");
+        if (!el) return;
+        if (!orders.length) {
+            el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-history" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i><p>Sem pedidos</p></div>';
+        } else {
+            el.innerHTML = orders.map(o => `
+                <div style="background:var(--light-bg);padding:1rem;border-radius:12px;margin-bottom:0.75rem">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+                        <strong style="color:var(--primary-dark)">#${o.id||o._id?.toString().slice(-6)}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">${new Date(o.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.3rem">${o.items.length} item(s)</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-weight:700">${formatMoney(o.total)}</span>
+                        <button onclick="reopenWhatsApp('${o.id || o._id}')" class="btn-cart" style="width:auto;padding:0.3rem 0.8rem;font-size:0.7rem;background:linear-gradient(135deg,#25D366,#128C7E)">
+                            <i class="fab fa-whatsapp"></i> Contato
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+        openModal("historyModal");
+    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    document.body.classList.add("dark");
+    
+    bindAllEvents();
+    loadLocalCartFavs();
+    checkAuthToken();
+    await loadProducts();
+});
+
+    const applyCoupon = document.getElementById("applyCouponBtn");
+    if (applyCoupon) applyCoupon.onclick = () => {
+        const code = document.getElementById("couponInput")?.value?.trim()?.toUpperCase();
+        const cupom = AppState.coupons.find(c => c.code === code);
+        if (cupom) {
+            AppState.appliedCoupon = cupom;
+            renderCartModal();
+            applyCoupon.classList.add("pulse-gold");
+            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+        } else {
+            applyCoupon.classList.remove("pulse-gold");
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        }
+    };
+}
+
+function showProfile() {
+    if (!AppState.currentUser) return;
+    const modal = document.getElementById("profileModal");
+    const content = modal.querySelector('.modal-content');
+    content.classList.add('luxury-modal');
+
+    const d = document.getElementById("profileInfo");
+    if (d) d.innerHTML = `
+        <div style="text-align:center; padding:1rem">
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.2rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 3px; font-size: 0.7rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
+            </div>
+            <i class="fas fa-check-circle bronze-check"></i>
+            <h2 style="font-family:'Playfair Display'; color:#FFF; font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2.5rem; font-style: italic;">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--bronze); margin-bottom: 5px;">Sessão Ativa</p>
+                <p style="font-weight:400; color:white; font-family:'Inter'">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem 4rem; width: auto;">OK</button>
+        </div>`;
+    openModal("profileModal");
+}
+
+window.reopenWhatsApp = (orderId) => {
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}. Pode me ajudar?`);
+    window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
+};
+
+async function showOrderHistory() {
+    if (!AppState.currentUser) return;
+    try {
+        const res = await fetch(`${API_URL}/pedidos/usuario`, { headers: { "Authorization": `Bearer ${AppState.token}` } });
+        const orders = await res.json();
+        const el = document.getElementById("historyList");
+        if (!el) return;
+        if (!orders.length) {
+            el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-history" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i><p>Sem pedidos</p></div>';
+        } else {
+            el.innerHTML = orders.map(o => `
+                <div style="background:var(--light-bg);padding:1rem;border-radius:12px;margin-bottom:0.75rem">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+                        <strong style="color:var(--primary-dark)">#${o.id||o._id?.toString().slice(-6)}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">${new Date(o.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.3rem">${o.items.length} item(s)</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-weight:700">${formatMoney(o.total)}</span>
+                        <button onclick="reopenWhatsApp('${o.id || o._id}')" class="btn-cart" style="width:auto;padding:0.3rem 0.8rem;font-size:0.7rem;background:linear-gradient(135deg,#25D366,#128C7E)">
+                            <i class="fab fa-whatsapp"></i> Contato
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+        openModal("historyModal");
+    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    document.body.classList.add("dark");
+    
+    bindAllEvents();
+    loadLocalCartFavs();
+    checkAuthToken();
+    await loadProducts();
+});
+
+    const applyCoupon = document.getElementById("applyCouponBtn");
+    if (applyCoupon) applyCoupon.onclick = () => {
+        const code = document.getElementById("couponInput")?.value?.trim()?.toUpperCase();
+        const cupom = AppState.coupons.find(c => c.code === code);
+        if (cupom) {
+            AppState.appliedCoupon = cupom;
+            renderCartModal();
+            applyCoupon.classList.add("pulse-gold");
+            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+        } else {
+            applyCoupon.classList.remove("pulse-gold");
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        }
+    };
+}
+
+function showProfile() {
+    if (!AppState.currentUser) return;
+    const modal = document.getElementById("profileModal");
+    const content = modal.querySelector('.modal-content');
+    content.classList.add('luxury-modal');
+
+    const d = document.getElementById("profileInfo");
+    if (d) d.innerHTML = `
+        <div style="text-align:center; padding:1rem">
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.2rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 3px; font-size: 0.7rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
+            </div>
+            <i class="fas fa-check-circle bronze-check"></i>
+            <h2 style="font-family:'Playfair Display'; color:#FFF; font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2.5rem; font-style: italic;">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--bronze); margin-bottom: 5px;">Sessão Ativa</p>
+                <p style="font-weight:400; color:white; font-family:'Inter'">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem 4rem; width: auto;">OK</button>
+        </div>`;
+    openModal("profileModal");
+}
+
+window.reopenWhatsApp = (orderId) => {
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}. Pode me ajudar?`);
+    window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
+};
+
+async function showOrderHistory() {
+    if (!AppState.currentUser) return;
+    try {
+        const res = await fetch(`${API_URL}/pedidos/usuario`, { headers: { "Authorization": `Bearer ${AppState.token}` } });
+        const orders = await res.json();
+        const el = document.getElementById("historyList");
+        if (!el) return;
+        if (!orders.length) {
+            el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-history" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i><p>Sem pedidos</p></div>';
+        } else {
+            el.innerHTML = orders.map(o => `
+                <div style="background:var(--light-bg);padding:1rem;border-radius:12px;margin-bottom:0.75rem">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+                        <strong style="color:var(--primary-dark)">#${o.id||o._id?.toString().slice(-6)}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">${new Date(o.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.3rem">${o.items.length} item(s)</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-weight:700">${formatMoney(o.total)}</span>
+                        <button onclick="reopenWhatsApp('${o.id || o._id}')" class="btn-cart" style="width:auto;padding:0.3rem 0.8rem;font-size:0.7rem;background:linear-gradient(135deg,#25D366,#128C7E)">
+                            <i class="fab fa-whatsapp"></i> Contato
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+        openModal("historyModal");
+    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    document.body.classList.add("dark");
+    
+    bindAllEvents();
+    loadLocalCartFavs();
+    checkAuthToken();
+    await loadProducts();
+});
+
+    const applyCoupon = document.getElementById("applyCouponBtn");
+    if (applyCoupon) applyCoupon.onclick = () => {
+        const code = document.getElementById("couponInput")?.value?.trim()?.toUpperCase();
+        const cupom = AppState.coupons.find(c => c.code === code);
+        if (cupom) {
+            AppState.appliedCoupon = cupom;
+            renderCartModal();
+            applyCoupon.classList.add("pulse-gold");
+            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+        } else {
+            applyCoupon.classList.remove("pulse-gold");
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        }
+    };
+}
+
+function showProfile() {
+    if (!AppState.currentUser) return;
+    const modal = document.getElementById("profileModal");
+    const content = modal.querySelector('.modal-content');
+    content.classList.add('luxury-modal');
+
+    const d = document.getElementById("profileInfo");
+    if (d) d.innerHTML = `
+        <div style="text-align:center; padding:1rem">
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.2rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 3px; font-size: 0.7rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
+            </div>
+            <i class="fas fa-check-circle bronze-check"></i>
+            <h2 style="font-family:'Playfair Display'; color:#FFF; font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2.5rem; font-style: italic;">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--bronze); margin-bottom: 5px;">Sessão Ativa</p>
+                <p style="font-weight:400; color:white; font-family:'Inter'">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem 4rem; width: auto;">OK</button>
+        </div>`;
+    openModal("profileModal");
+}
+
+window.reopenWhatsApp = (orderId) => {
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}. Pode me ajudar?`);
+    window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
+};
+
+async function showOrderHistory() {
+    if (!AppState.currentUser) return;
+    try {
+        const res = await fetch(`${API_URL}/pedidos/usuario`, { headers: { "Authorization": `Bearer ${AppState.token}` } });
+        const orders = await res.json();
+        const el = document.getElementById("historyList");
+        if (!el) return;
+        if (!orders.length) {
+            el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-history" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i><p>Sem pedidos</p></div>';
+        } else {
+            el.innerHTML = orders.map(o => `
+                <div style="background:var(--light-bg);padding:1rem;border-radius:12px;margin-bottom:0.75rem">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+                        <strong style="color:var(--primary-dark)">#${o.id||o._id?.toString().slice(-6)}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">${new Date(o.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.3rem">${o.items.length} item(s)</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-weight:700">${formatMoney(o.total)}</span>
+                        <button onclick="reopenWhatsApp('${o.id || o._id}')" class="btn-cart" style="width:auto;padding:0.3rem 0.8rem;font-size:0.7rem;background:linear-gradient(135deg,#25D366,#128C7E)">
+                            <i class="fab fa-whatsapp"></i> Contato
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+        openModal("historyModal");
+    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    document.body.classList.add("dark");
+    
+    bindAllEvents();
+    loadLocalCartFavs();
+    checkAuthToken();
+    await loadProducts();
+});
+
+    const applyCoupon = document.getElementById("applyCouponBtn");
+    if (applyCoupon) applyCoupon.onclick = () => {
+        const code = document.getElementById("couponInput")?.value?.trim()?.toUpperCase();
+        const cupom = AppState.coupons.find(c => c.code === code);
+        if (cupom) {
+            AppState.appliedCoupon = cupom;
+            renderCartModal();
+            applyCoupon.classList.add("pulse-gold");
+            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+        } else {
+            applyCoupon.classList.remove("pulse-gold");
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        }
+    };
+}
+
+function showProfile() {
+    if (!AppState.currentUser) return;
+    const modal = document.getElementById("profileModal");
+    const content = modal.querySelector('.modal-content');
+    content.classList.add('luxury-modal');
+
+    const d = document.getElementById("profileInfo");
+    if (d) d.innerHTML = `
+        <div style="text-align:center; padding:1rem">
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.2rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 3px; font-size: 0.7rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
+            </div>
+            <i class="fas fa-check-circle bronze-check"></i>
+            <h2 style="font-family:'Playfair Display'; color:#FFF; font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2.5rem; font-style: italic;">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--bronze); margin-bottom: 5px;">Sessão Ativa</p>
+                <p style="font-weight:400; color:white; font-family:'Inter'">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem 4rem; width: auto;">OK</button>
+        </div>`;
+    openModal("profileModal");
+}
+
+window.reopenWhatsApp = (orderId) => {
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}. Pode me ajudar?`);
+    window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
+};
+
+async function showOrderHistory() {
+    if (!AppState.currentUser) return;
+    try {
+        const res = await fetch(`${API_URL}/pedidos/usuario`, { headers: { "Authorization": `Bearer ${AppState.token}` } });
+        const orders = await res.json();
+        const el = document.getElementById("historyList");
+        if (!el) return;
+        if (!orders.length) {
+            el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-history" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i><p>Sem pedidos</p></div>';
+        } else {
+            el.innerHTML = orders.map(o => `
+                <div style="background:var(--light-bg);padding:1rem;border-radius:12px;margin-bottom:0.75rem">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+                        <strong style="color:var(--primary-dark)">#${o.id||o._id?.toString().slice(-6)}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">${new Date(o.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.3rem">${o.items.length} item(s)</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-weight:700">${formatMoney(o.total)}</span>
+                        <button onclick="reopenWhatsApp('${o.id || o._id}')" class="btn-cart" style="width:auto;padding:0.3rem 0.8rem;font-size:0.7rem;background:linear-gradient(135deg,#25D366,#128C7E)">
+                            <i class="fab fa-whatsapp"></i> Contato
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+        openModal("historyModal");
+    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    document.body.classList.add("dark");
+    
+    bindAllEvents();
+    loadLocalCartFavs();
+    checkAuthToken();
+    await loadProducts();
+});
+
+    const applyCoupon = document.getElementById("applyCouponBtn");
+    if (applyCoupon) applyCoupon.onclick = () => {
+        const code = document.getElementById("couponInput")?.value?.trim()?.toUpperCase();
+        const cupom = AppState.coupons.find(c => c.code === code);
+        if (cupom) {
+            AppState.appliedCoupon = cupom;
+            renderCartModal();
+            applyCoupon.classList.add("pulse-gold");
+            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+        } else {
+            applyCoupon.classList.remove("pulse-gold");
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        }
+    };
+}
+
+function showProfile() {
+    if (!AppState.currentUser) return;
+    const modal = document.getElementById("profileModal");
+    const content = modal.querySelector('.modal-content');
+    content.classList.add('luxury-modal');
+
+    const d = document.getElementById("profileInfo");
+    if (d) d.innerHTML = `
+        <div style="text-align:center; padding:1rem">
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.2rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 3px; font-size: 0.7rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
+            </div>
+            <i class="fas fa-check-circle bronze-check"></i>
+            <h2 style="font-family:'Playfair Display'; color:#FFF; font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2.5rem; font-style: italic;">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--bronze); margin-bottom: 5px;">Sessão Ativa</p>
+                <p style="font-weight:400; color:white; font-family:'Inter'">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem 4rem; width: auto;">OK</button>
+        </div>`;
+    openModal("profileModal");
+}
+
+window.reopenWhatsApp = (orderId) => {
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}. Pode me ajudar?`);
+    window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
+};
+
+async function showOrderHistory() {
+    if (!AppState.currentUser) return;
+    try {
+        const res = await fetch(`${API_URL}/pedidos/usuario`, { headers: { "Authorization": `Bearer ${AppState.token}` } });
+        const orders = await res.json();
+        const el = document.getElementById("historyList");
+        if (!el) return;
+        if (!orders.length) {
+            el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-history" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i><p>Sem pedidos</p></div>';
+        } else {
+            el.innerHTML = orders.map(o => `
+                <div style="background:var(--light-bg);padding:1rem;border-radius:12px;margin-bottom:0.75rem">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+                        <strong style="color:var(--primary-dark)">#${o.id||o._id?.toString().slice(-6)}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">${new Date(o.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.3rem">${o.items.length} item(s)</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-weight:700">${formatMoney(o.total)}</span>
+                        <button onclick="reopenWhatsApp('${o.id || o._id}')" class="btn-cart" style="width:auto;padding:0.3rem 0.8rem;font-size:0.7rem;background:linear-gradient(135deg,#25D366,#128C7E)">
+                            <i class="fab fa-whatsapp"></i> Contato
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+        openModal("historyModal");
+    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    document.body.classList.add("dark");
+    
+    bindAllEvents();
+    loadLocalCartFavs();
+    checkAuthToken();
+    await loadProducts();
+});
+
+    const applyCoupon = document.getElementById("applyCouponBtn");
+    if (applyCoupon) applyCoupon.onclick = () => {
+        const code = document.getElementById("couponInput")?.value?.trim()?.toUpperCase();
+        const cupom = AppState.coupons.find(c => c.code === code);
+        if (cupom) {
+            AppState.appliedCoupon = cupom;
+            renderCartModal();
+            applyCoupon.classList.add("pulse-gold");
+            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+        } else {
+            applyCoupon.classList.remove("pulse-gold");
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        }
+    };
+}
+
+function showProfile() {
+    if (!AppState.currentUser) return;
+    const modal = document.getElementById("profileModal");
+    const content = modal.querySelector('.modal-content');
+    content.classList.add('luxury-modal');
+
+    const d = document.getElementById("profileInfo");
+    if (d) d.innerHTML = `
+        <div style="text-align:center; padding:1rem">
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.2rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 3px; font-size: 0.7rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
+            </div>
+            <i class="fas fa-check-circle bronze-check"></i>
+            <h2 style="font-family:'Playfair Display'; color:#FFF; font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2.5rem; font-style: italic;">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--bronze); margin-bottom: 5px;">Sessão Ativa</p>
+                <p style="font-weight:400; color:white; font-family:'Inter'">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem 4rem; width: auto;">OK</button>
+        </div>`;
+    openModal("profileModal");
+}
+
+window.reopenWhatsApp = (orderId) => {
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}. Pode me ajudar?`);
+    window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
+};
+
+async function showOrderHistory() {
+    if (!AppState.currentUser) return;
+    try {
+        const res = await fetch(`${API_URL}/pedidos/usuario`, { headers: { "Authorization": `Bearer ${AppState.token}` } });
+        const orders = await res.json();
+        const el = document.getElementById("historyList");
+        if (!el) return;
+        if (!orders.length) {
+            el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-history" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i><p>Sem pedidos</p></div>';
+        } else {
+            el.innerHTML = orders.map(o => `
+                <div style="background:var(--light-bg);padding:1rem;border-radius:12px;margin-bottom:0.75rem">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+                        <strong style="color:var(--primary-dark)">#${o.id||o._id?.toString().slice(-6)}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">${new Date(o.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.3rem">${o.items.length} item(s)</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-weight:700">${formatMoney(o.total)}</span>
+                        <button onclick="reopenWhatsApp('${o.id || o._id}')" class="btn-cart" style="width:auto;padding:0.3rem 0.8rem;font-size:0.7rem;background:linear-gradient(135deg,#25D366,#128C7E)">
+                            <i class="fab fa-whatsapp"></i> Contato
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+        openModal("historyModal");
+    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    document.body.classList.add("dark");
+    
+    bindAllEvents();
+    loadLocalCartFavs();
+    checkAuthToken();
+    await loadProducts();
+});
+
+    const applyCoupon = document.getElementById("applyCouponBtn");
+    if (applyCoupon) applyCoupon.onclick = () => {
+        const code = document.getElementById("couponInput")?.value?.trim()?.toUpperCase();
+        const cupom = AppState.coupons.find(c => c.code === code);
+        if (cupom) {
+            AppState.appliedCoupon = cupom;
+            renderCartModal();
+            applyCoupon.classList.add("pulse-gold");
+            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+        } else {
+            applyCoupon.classList.remove("pulse-gold");
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        }
+    };
+}
+
+function showProfile() {
+    if (!AppState.currentUser) return;
+    const modal = document.getElementById("profileModal");
+    const content = modal.querySelector('.modal-content');
+    content.classList.add('luxury-modal');
+
+    const d = document.getElementById("profileInfo");
+    if (d) d.innerHTML = `
+        <div style="text-align:center; padding:1rem">
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.2rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 3px; font-size: 0.7rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
+            </div>
+            <i class="fas fa-check-circle bronze-check"></i>
+            <h2 style="font-family:'Playfair Display'; color:#FFF; font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2.5rem; font-style: italic;">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--bronze); margin-bottom: 5px;">Sessão Ativa</p>
+                <p style="font-weight:400; color:white; font-family:'Inter'">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem 4rem; width: auto;">OK</button>
+        </div>`;
+    openModal("profileModal");
+}
+
+window.reopenWhatsApp = (orderId) => {
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}. Pode me ajudar?`);
+    window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
+};
+
+async function showOrderHistory() {
+    if (!AppState.currentUser) return;
+    try {
+        const res = await fetch(`${API_URL}/pedidos/usuario`, { headers: { "Authorization": `Bearer ${AppState.token}` } });
+        const orders = await res.json();
+        const el = document.getElementById("historyList");
+        if (!el) return;
+        if (!orders.length) {
+            el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-history" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i><p>Sem pedidos</p></div>';
+        } else {
+            el.innerHTML = orders.map(o => `
+                <div style="background:var(--light-bg);padding:1rem;border-radius:12px;margin-bottom:0.75rem">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+                        <strong style="color:var(--primary-dark)">#${o.id||o._id?.toString().slice(-6)}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">${new Date(o.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.3rem">${o.items.length} item(s)</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-weight:700">${formatMoney(o.total)}</span>
+                        <button onclick="reopenWhatsApp('${o.id || o._id}')" class="btn-cart" style="width:auto;padding:0.3rem 0.8rem;font-size:0.7rem;background:linear-gradient(135deg,#25D366,#128C7E)">
+                            <i class="fab fa-whatsapp"></i> Contato
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+        openModal("historyModal");
+    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    document.body.classList.add("dark");
+    
+    bindAllEvents();
+    loadLocalCartFavs();
+    checkAuthToken();
+    await loadProducts();
+});
+
+    const applyCoupon = document.getElementById("applyCouponBtn");
+    if (applyCoupon) applyCoupon.onclick = () => {
+        const code = document.getElementById("couponInput")?.value?.trim()?.toUpperCase();
+        const cupom = AppState.coupons.find(c => c.code === code);
+        if (cupom) {
+            AppState.appliedCoupon = cupom;
+            renderCartModal();
+            applyCoupon.classList.add("pulse-gold");
+            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+        } else {
+            applyCoupon.classList.remove("pulse-gold");
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        }
+    };
+}
+
+function showProfile() {
+    if (!AppState.currentUser) return;
+    const modal = document.getElementById("profileModal");
+    const content = modal.querySelector('.modal-content');
+    content.classList.add('luxury-modal');
+
+    const d = document.getElementById("profileInfo");
+    if (d) d.innerHTML = `
+        <div style="text-align:center; padding:1rem">
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.2rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 3px; font-size: 0.7rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
+            </div>
+            <i class="fas fa-check-circle bronze-check"></i>
+            <h2 style="font-family:'Playfair Display'; color:#FFF; font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2.5rem; font-style: italic;">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--bronze); margin-bottom: 5px;">Sessão Ativa</p>
+                <p style="font-weight:400; color:white; font-family:'Inter'">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem 4rem; width: auto;">OK</button>
+        </div>`;
+    openModal("profileModal");
+}
+
+window.reopenWhatsApp = (orderId) => {
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}. Pode me ajudar?`);
+    window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
+};
+
+async function showOrderHistory() {
+    if (!AppState.currentUser) return;
+    try {
+        const res = await fetch(`${API_URL}/pedidos/usuario`, { headers: { "Authorization": `Bearer ${AppState.token}` } });
+        const orders = await res.json();
+        const el = document.getElementById("historyList");
+        if (!el) return;
+        if (!orders.length) {
+            el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-history" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i><p>Sem pedidos</p></div>';
+        } else {
+            el.innerHTML = orders.map(o => `
+                <div style="background:var(--light-bg);padding:1rem;border-radius:12px;margin-bottom:0.75rem">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+                        <strong style="color:var(--primary-dark)">#${o.id||o._id?.toString().slice(-6)}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">${new Date(o.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.3rem">${o.items.length} item(s)</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-weight:700">${formatMoney(o.total)}</span>
+                        <button onclick="reopenWhatsApp('${o.id || o._id}')" class="btn-cart" style="width:auto;padding:0.3rem 0.8rem;font-size:0.7rem;background:linear-gradient(135deg,#25D366,#128C7E)">
+                            <i class="fab fa-whatsapp"></i> Contato
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+        openModal("historyModal");
+    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    document.body.classList.add("dark");
+    
+    bindAllEvents();
+    loadLocalCartFavs();
+    checkAuthToken();
+    await loadProducts();
+});
+
+    const applyCoupon = document.getElementById("applyCouponBtn");
+    if (applyCoupon) applyCoupon.onclick = () => {
+        const code = document.getElementById("couponInput")?.value?.trim()?.toUpperCase();
+        const cupom = AppState.coupons.find(c => c.code === code);
+        if (cupom) {
+            AppState.appliedCoupon = cupom;
+            renderCartModal();
+            applyCoupon.classList.add("pulse-gold");
+            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+        } else {
+            applyCoupon.classList.remove("pulse-gold");
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        }
+    };
+}
+
+function showProfile() {
+    if (!AppState.currentUser) return;
+    const modal = document.getElementById("profileModal");
+    const content = modal.querySelector('.modal-content');
+    content.classList.add('luxury-modal');
+
+    const d = document.getElementById("profileInfo");
+    if (d) d.innerHTML = `
+        <div style="text-align:center; padding:1rem">
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.2rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 3px; font-size: 0.7rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
+            </div>
+            <i class="fas fa-check-circle bronze-check"></i>
+            <h2 style="font-family:'Playfair Display'; color:#FFF; font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2.5rem; font-style: italic;">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--bronze); margin-bottom: 5px;">Sessão Ativa</p>
+                <p style="font-weight:400; color:white; font-family:'Inter'">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem 4rem; width: auto;">OK</button>
+        </div>`;
+    openModal("profileModal");
+}
+
+window.reopenWhatsApp = (orderId) => {
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}. Pode me ajudar?`);
+    window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
+};
+
+async function showOrderHistory() {
+    if (!AppState.currentUser) return;
+    try {
+        const res = await fetch(`${API_URL}/pedidos/usuario`, { headers: { "Authorization": `Bearer ${AppState.token}` } });
+        const orders = await res.json();
+        const el = document.getElementById("historyList");
+        if (!el) return;
+        if (!orders.length) {
+            el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-history" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i><p>Sem pedidos</p></div>';
+        } else {
+            el.innerHTML = orders.map(o => `
+                <div style="background:var(--light-bg);padding:1rem;border-radius:12px;margin-bottom:0.75rem">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+                        <strong style="color:var(--primary-dark)">#${o.id||o._id?.toString().slice(-6)}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">${new Date(o.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.3rem">${o.items.length} item(s)</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-weight:700">${formatMoney(o.total)}</span>
+                        <button onclick="reopenWhatsApp('${o.id || o._id}')" class="btn-cart" style="width:auto;padding:0.3rem 0.8rem;font-size:0.7rem;background:linear-gradient(135deg,#25D366,#128C7E)">
+                            <i class="fab fa-whatsapp"></i> Contato
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+        openModal("historyModal");
+    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    document.body.classList.add("dark");
+    
+    bindAllEvents();
+    loadLocalCartFavs();
+    checkAuthToken();
+    await loadProducts();
+});
+
+    const applyCoupon = document.getElementById("applyCouponBtn");
+    if (applyCoupon) applyCoupon.onclick = () => {
+        const code = document.getElementById("couponInput")?.value?.trim()?.toUpperCase();
+        const cupom = AppState.coupons.find(c => c.code === code);
+        if (cupom) {
+            AppState.appliedCoupon = cupom;
+            renderCartModal();
+            applyCoupon.classList.add("pulse-gold");
+            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+        } else {
+            applyCoupon.classList.remove("pulse-gold");
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+        }
+    };
+}
+
+function showProfile() {
+    if (!AppState.currentUser) return;
+    const modal = document.getElementById("profileModal");
+    const content = modal.querySelector('.modal-content');
+    content.classList.add('luxury-modal');
+
+    const d = document.getElementById("profileInfo");
+    if (d) d.innerHTML = `
+        <div style="text-align:center; padding:1rem">
+            <div class="er-logo-mark">
+                <i class="fas fa-crown" style="color:var(--bronze); font-size: 1.2rem; margin-bottom: 0.5rem;"></i>
+                <span style="font-family:'Playfair Display'; color:var(--bronze); letter-spacing: 3px; font-size: 0.7rem; text-transform: uppercase;">Edcláudia Ribeiro</span>
+            </div>
+            <i class="fas fa-check-circle bronze-check"></i>
+            <h2 style="font-family:'Playfair Display'; color:#FFF; font-size:2.2rem; margin-bottom:0.5rem">Bem-vindo!</h2>
+            <p style="color:var(--text-light); font-size:1.1rem; margin-bottom:2.5rem; font-style: italic;">Olá, ${AppState.currentUser.name}!</p>
+            <div style="background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); padding:1.5rem; border-radius:4px; margin-bottom:2rem">
+                <p style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--bronze); margin-bottom: 5px;">Sessão Ativa</p>
+                <p style="font-weight:400; color:white; font-family:'Inter'">${AppState.currentUser.email}</p>
+            </div>
+            <button class="btn-metallic" onclick="closeModal('profileModal')" style="padding:1rem 4rem; width: auto;">OK</button>
+        </div>`;
+    openModal("profileModal");
+}
+
+window.reopenWhatsApp = (orderId) => {
+    const msg = encodeURIComponent(`Olá! Gostaria de falar sobre o meu pedido #${orderId.toString().slice(-6)}. Pode me ajudar?`);
+    window.open(`https://wa.me/5588981078835?text=${msg}`, '_blank');
+};
+
+async function showOrderHistory() {
+    if (!AppState.currentUser) return;
+    try {
+        const res = await fetch(`${API_URL}/pedidos/usuario`, { headers: { "Authorization": `Bearer ${AppState.token}` } });
+        const orders = await res.json();
+        const el = document.getElementById("historyList");
+        if (!el) return;
+        if (!orders.length) {
+            el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-history" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i><p>Sem pedidos</p></div>';
+        } else {
+            el.innerHTML = orders.map(o => `
+                <div style="background:var(--light-bg);padding:1rem;border-radius:12px;margin-bottom:0.75rem">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+                        <strong style="color:var(--primary-dark)">#${o.id||o._id?.toString().slice(-6)}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">${new Date(o.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.3rem">${o.items.length} item(s)</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-weight:700">${formatMoney(o.total)}</span>
+                        <button onclick="reopenWhatsApp('${o.id || o._id}')" class="btn-cart" style="width:auto;padding:0.3rem 0.8rem;font-size:0.7rem;background:linear-gradient(135deg,#25D366,#128C7E)">
+                            <i class="fab fa-whatsapp"></i> Contato
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+        openModal("historyModal");
+    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    document.body.classList.add("dark");
+    
+    bindAllEvents();
+    loadLocalCartFavs();
+    checkAuthToken();
+    await loadProducts();
+});
 
     const applyCoupon = document.getElementById("applyCouponBtn");
     if (applyCoupon) applyCoupon.onclick = () => {

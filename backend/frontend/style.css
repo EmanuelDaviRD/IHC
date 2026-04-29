@@ -468,17 +468,45 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .filters-bar {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-    margin-bottom: 2rem;
-    align-items: cente;
-    background: var(--dark-card);
-    padding: 1rem 1.5rem;
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-bronze);
+    display: none; /* Removido do grid principal para o modal */
+}
+
+.category-filter-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+.cat-filter-btn {
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(201, 169, 110, 0.2);
-    margin-bottom: 2rem;
+    color: var(--text-light);
+    padding: 0.8rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 0.85rem;
+    transition: var(--transition);
+    text-align: center;
+}
+
+.cat-filter-btn:hover {
+    background: rgba(201, 169, 110, 0.1);
+    border-color: var(--bronze);
+    color: white;
+}
+
+.cat-filter-btn.active {
+    background: var(--bronze-metallic);
+    color: #000;
+    border-color: transparent;
+    font-weight: 700;
+}
+
+.price-inputs {
+    display: flex;
+    gap: 0.5rem;
 }
 
 .filter-group {
