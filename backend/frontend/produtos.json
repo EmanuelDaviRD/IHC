@@ -1,0 +1,60 @@
+[
+  {
+    "id": "1",
+    "name": "Hidratante Facial Natura",
+    "category": "Natura",
+    "price": 89.90,
+    "image": "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=400&fit=crop",
+    "badge": "new",
+    "stock": 15,
+    "sales": 45
+  },
+  {
+    "id": "2",
+    "name": "Perfume Egeo O Boticário",
+    "category": "O Boticário",
+    "price": 179.90,
+    "image": "https://images.unsplash.com/photo-1611593735076-fd501b3a74a3?w=400&h=400&fit=crop",
+    "badge": "bestseller",
+    "stock": 8,
+    "sales": 120
+  },
+  {
+    "id": "3",
+    "name": "Batom Líquido Avon",
+    "category": "Avon",
+    "price": 39.90,
+    "image": "https://images.unsplash.com/photo-1570194054506-c7f669b5b381?w=400&h=400&fit=crop",
+    "badge": "sale",
+    "stock": 25,
+    "sales": 80
+  },
+  {
+    "id": "4",
+    "name": "Kit Presente Kits",
+    "category": "Kits",
+    "price": 149.90,
+    "image": "https://images.unsplash.com/photo-1588702547929-15f16e962b84?w=400&h=400&fit=crop",
+    "stock": 12,
+    "sales": 30
+  },
+  {
+    "id": "5",
+    "name": "Pincel Acessórios",
+    "category": "Acessórios",
+    "price": 29.90,
+    "image": "https://images.unsplash.com/photo-1587688293548-d5caab6e7dc9?w=400&h=400&fit=crop",
+    "stock": 50,
+    "sales": 60
+  },
+  {
+    "id": "6",
+    "name": "Novidade Facial",
+    "category": "new",
+    "price": 99.90,
+    "image": "https://images.unsplash.com/photo-1625772299848-fb5f2d4c5f18?w=400&h=400&fit=crop",
+    "badge": "new",
+    "stock": 20,
+    "sales": 15
+  }
+]
