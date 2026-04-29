@@ -290,6 +290,55 @@ h1, h2, h3, h4, h5, h6 {
     border-bottom: 1px solid rgba(201,169,110,0.2);
 }
 
+/* Bottom Navigation Bar */
+.bottom-nav {
+    display: none; /* Escondido por padrão no desktop */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 70px;
+    background: rgba(13, 13, 21, 0.85);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-top: 1px solid rgba(201, 169, 110, 0.2);
+    z-index: 1000;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 10px;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+}
+
+.nav-item-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    position: relative;
+    transition: var(--transition);
+    flex: 1;
+}
+
+.nav-item-btn i {
+    font-size: 1.2rem;
+    transition: var(--transition);
+}
+
+.nav-item-btn span {
+    font-size: 0.65rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.nav-item-btn:hover, .nav-item-btn.active {
+    color: var(--primary);
+}
+
 .header-container { 
     display: flex; 
     justify-content: space-between; 
@@ -1217,24 +1266,34 @@ footer {
     /* Header Responsivo: 2 linhas dinâmicas */
     .header-container {
         flex-wrap: wrap;
-        padding: 1rem 1.5rem;
-        justify-content: space-between;
+        padding: 0.8rem 1.5rem;
+        justify-content: center;
     }
 
     .logo-area {
         order: 1;
-        font-size: 1.3rem;
+        font-size: 1.4rem;
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 0.5rem;
     }
 
     .header-actions {
-        order: 2;
-        gap: 1rem; /* Aumenta o espaçamento para evitar cliques errados */
+        display: none; /* Remove ícones do topo no mobile */
+    }
+
+    .bottom-nav {
+        display: flex; /* Mostra a barra inferior no mobile */
+    }
+
+    body {
+        padding-bottom: 80px; /* Evita que a barra cubra o conteúdo */
     }
 
     .header-center {
-        order: 3;
+        order: 2;
         flex: 0 0 100%;
-        margin-top: 1.2rem;
+        margin-top: 0.5rem;
         min-width: unset;
     }
 
@@ -1242,20 +1301,38 @@ footer {
         max-width: 100%;
     }
 
+    .search-bar input {
+        border-radius: 50px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(201, 169, 110, 0.2);
+        height: 40px;
+        font-size: 0.85rem;
+    }
+
     /* Modal de Filtro em Tela Cheia (Drawer Style) */
     .modal {
         padding: 0;
-        align-items: flex-start;
+        align-items: flex-end; /* Alinha ao rodapé */
+    }
+
+    .modal[style*="display: flex"] .modal-content.luxury-modal {
+        animation: bottomSheetUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes bottomSheetUp {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
     }
 
     .modal-content.luxury-modal {
         width: 100% !important;
-        height: 100vh !important;
-        max-width: 100% !important;
+        height: auto !important;
+        max-height: 85vh !important;
         margin: 0 !important;
-        border-radius: 0 !important;
-        padding: 4.5rem 1.5rem 2rem;
+        border-radius: 24px 24px 0 0 !important;
+        padding: 3rem 1.5rem 2rem;
         overflow-y: auto;
+        border-bottom: none !important;
     }
 
     .close {

@@ -54,25 +54,16 @@ function loadLocalCartFavs() {
 
 function updateCartBadge() {
     const total = AppState.cart.reduce((s, i) => s + (i.qty || 0), 0);
-    const b = document.getElementById("cartCount");
-    if (b) b.innerText = total;
+    document.querySelectorAll(".cart-count-badge").forEach(b => b.innerText = total);
 }
 
 function updateFavBadge() {
-    const b = document.getElementById("favCount");
-    if (b) {
-        // Filtra para garantir que não existam IDs inválidos contando no badge
-        const count = AppState.favorites.filter(id => id && id !== "null" && id !== "undefined").length;
+    const count = AppState.favorites.filter(id => id && id !== "null" && id !== "undefined").length;
+    document.querySelectorAll(".fav-count-badge").forEach(b => {
         b.innerText = count;
-        
-        if (count > 0) {
-            b.style.display = 'flex';
-            b.classList.add('fade-in');
-        } else {
-            b.style.display = 'none';
-        }
-        console.log('Badge Favoritos:', count);
-    }
+        b.style.display = count > 0 ? 'flex' : 'none';
+        if (count > 0) b.classList.add('fade-in');
+    });
 }
 
 
@@ -527,6 +518,22 @@ function bindAllEvents() {
     const filterToggle = document.getElementById("filterToggle");
     if (filterToggle) filterToggle.onclick = () => openModal("filterModal");
     
+    const filterToggleMob = document.getElementById("filterToggleMobile");
+    if (filterToggleMob) filterToggleMob.onclick = () => openModal("filterModal");
+
+    const cartIconMob = document.getElementById("cartIconMobile");
+    if (cartIconMob) cartIconMob.onclick = () => { openModal("cartModal"); renderCartModal(); };
+
+    const favIconMob = document.getElementById("favoritesIconMobile");
+    if (favIconMob) favIconMob.onclick = () => { openModal("favoritesModal"); renderFavoritesModal(); };
+
+    const userBtnMob = document.getElementById("userBtnMobile");
+    userBtnMob?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openModal("profileModal"); // No mobile, abre o perfil direto em vez do dropdown
+        showProfile();
+    });
+
     setupFilterListeners();
 
     const loginBtn = document.getElementById("loginBtn");
