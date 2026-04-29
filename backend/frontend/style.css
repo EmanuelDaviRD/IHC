@@ -1334,20 +1334,35 @@ footer {
     }
 
     .modal-content.luxury-modal,
-    .modal-content.product-modal {
+    .modal-content.product-modal,
+    .modal-content.cart-modal {
         position: fixed !important;
         bottom: 0 !important;
         left: 0 !important;
         width: 100% !important;
-        max-height: 90vh !important;
+        max-height: 85vh !important;
         margin: 0 !important;
         border-radius: 20px 20px 0 0 !important;
         z-index: 10000 !important;
         background: #1A1D20 !important;
-        padding: 4rem 1.5rem 2rem !important;
-        overflow-y: auto !important;
+        padding: 3.5rem 1.5rem 1.5rem !important;
+        display: flex !important;
+        flex-direction: column !important;
         border: 1px solid rgba(201, 169, 110, 0.3) !important;
         border-bottom: none !important;
+        overflow-y: hidden !important;
+    }
+
+    #cartItems {
+        flex: 1 !important;
+        overflow-y: auto !important;
+        max-height: 60vh !important;
+        margin-bottom: 1rem !important;
+        padding-right: 5px;
+    }
+
+    .cart-total, .coupon-area, .btn-checkout-premium, .btn-primary {
+        flex-shrink: 0 !important;
     }
 
     .close {
