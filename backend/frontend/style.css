@@ -1279,7 +1279,13 @@ footer {
     }
 
     .header-actions {
-        display: none; /* Remove ícones do topo no mobile */
+        display: block;
+        height: 0;
+    }
+
+    .header-actions > button.icon-btn, 
+    .user-menu > button.icon-btn {
+        display: none; /* Esconde os ícones físicos do topo */
     }
 
     .bottom-nav {
@@ -1311,27 +1317,34 @@ footer {
 
     /* Modal de Filtro em Tela Cheia (Drawer Style) */
     .modal {
-        padding: 0;
-        align-items: flex-end; /* Alinha ao rodapé */
+        padding: 0 !important;
+        align-items: flex-end !important; /* Alinha ao rodapé */
+        z-index: 2000;
     }
 
-    .modal[style*="display: flex"] .modal-content.luxury-modal {
+    .modal[style*="display: flex"] .modal-content.luxury-modal,
+    .modal[style*="display: flex"] .modal-content.cart-modal {
         animation: bottomSheetUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     }
 
     @keyframes bottomSheetUp {
-        from { transform: translateY(100%); }
-        to { transform: translateY(0); }
+        from { transform: translateY(100%); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
     }
 
     .modal-content.luxury-modal {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
         width: 100% !important;
-        height: auto !important;
-        max-height: 85vh !important;
+        max-height: 75vh !important;
         margin: 0 !important;
-        border-radius: 24px 24px 0 0 !important;
-        padding: 3rem 1.5rem 2rem;
-        overflow-y: auto;
+        border-radius: 20px 20px 0 0 !important;
+        z-index: 1005 !important;
+        background: #1A1D20 !important;
+        padding: 4rem 1.5rem 2rem !important;
+        overflow-y: auto !important;
+        border: 1px solid rgba(201, 169, 110, 0.3) !important;
         border-bottom: none !important;
     }
 
@@ -1340,6 +1353,26 @@ footer {
         top: 1rem;
         right: 1.5rem;
         z-index: 2005;
+    }
+
+    /* Menu da Conta Mobile (Abre para cima) */
+    .dropdown-content {
+        position: fixed !important;
+        bottom: 80px !important; /* Acima da Bottom Bar */
+        top: auto !important;
+        left: 50% !important;
+        transform: translateX(-50%) translateY(10px) !important;
+        width: 90% !important;
+        max-width: 280px !important;
+        z-index: 1005 !important;
+        border: 1px solid var(--primary) !important;
+        box-shadow: 0 -10px 25px rgba(0,0,0,0.5) !important;
+    }
+
+    .dropdown-content.show {
+        display: block !important;
+        opacity: 1 !important;
+        transform: translateX(-50%) translateY(0) !important;
     }
 
     /* Grid de Produtos: 2 por linha para aproveitar melhor o espaço */

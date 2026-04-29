@@ -530,8 +530,7 @@ function bindAllEvents() {
     const userBtnMob = document.getElementById("userBtnMobile");
     userBtnMob?.addEventListener("click", (e) => {
         e.stopPropagation();
-        openModal("profileModal"); // No mobile, abre o perfil direto em vez do dropdown
-        showProfile();
+        document.getElementById("userDropdown")?.classList.toggle("show");
     });
 
     setupFilterListeners();
