@@ -288,15 +288,28 @@ h1, h2, h3, h4, h5, h6 {
     border-bottom: 1px solid rgba(201,169,110,0.2);
 }
 
-.header-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 1rem;
+.header-container { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    flex-wrap: wrap; 
+    gap: 1rem; 
     max-width: 1400px;
     margin: 0 auto;
     padding: 1rem 2rem;
+}
+
+.header-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
 .logo-area {
@@ -412,18 +425,32 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: var(--shadow-gold);
 }
 
+.category-nav-inline {
+    display: flex !important;
+}
+
+.category-nav-inline ul {
+    display: flex !important;
+    gap: 0.5rem !important;
+    list-style: none;
+    align-items: center;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.category-nav-inline ul::-webkit-scrollbar { display: none; }
+
+.category-nav-inline a {
+    font-size: 0.75rem !important;
+    padding: 0.4rem 0.8rem !important;
+    white-space: nowrap !important;
+}
+
+/* Remove o antigo category-nav */
 .category-nav {
-    background: var(--card-bg);
-    border-bottom: 1px solid var(--border);
-    padding: 0.8rem 1rem;
-    background: #000000;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 1rem 0;
-    position: sticky;
-    top: 125px;
-    z-index: 99;
-    display: block;
-    min-height: 60px;
+    display: none !important;
 }
 
 .category-nav ul {
