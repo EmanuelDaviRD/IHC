@@ -264,6 +264,8 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+html { overflow-x: hidden; }
+
 body {
     font-family: 'Inter', sans-serif;
     background: var(--light-bg);
@@ -1212,28 +1214,78 @@ footer {
 }
 
 @media (max-width: 768px) {
+    /* Header Responsivo: 2 linhas dinâmicas */
+    .header-container {
+        flex-wrap: wrap;
+        padding: 1rem 1.5rem;
+        justify-content: space-between;
+    }
+
+    .logo-area {
+        order: 1;
+        font-size: 1.3rem;
+    }
+
+    .header-actions {
+        order: 2;
+        gap: 1rem; /* Aumenta o espaçamento para evitar cliques errados */
+    }
+
+    .header-center {
+        order: 3;
+        flex: 0 0 100%;
+        margin-top: 1.2rem;
+        min-width: unset;
+    }
+
+    .search-bar {
+        max-width: 100%;
+    }
+
+    /* Modal de Filtro em Tela Cheia (Drawer Style) */
+    .modal {
+        padding: 0;
+        align-items: flex-start;
+    }
+
+    .modal-content.luxury-modal {
+        width: 100% !important;
+        height: 100vh !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        padding: 4.5rem 1.5rem 2rem;
+        overflow-y: auto;
+    }
+
+    .close {
+        font-size: 2.8rem; /* 'X' bem grande para fácil toque */
+        top: 1rem;
+        right: 1.5rem;
+        z-index: 2005;
+    }
+
+    /* Grid de Produtos: 2 por linha para aproveitar melhor o espaço */
     .products-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
+        gap: 0.75rem;
     }
-    
-    .main-header { padding: 0; }
-    .header-container { padding: 0.75rem 1rem; }
-    .logo-area { font-size: 1.2rem; }
-    .search-bar { padding: 0.5rem 1rem; }
-    .filters-bar {
-        flex-direction: column;
-        gap: 0.5rem;
-        padding: 0.75rem;
+
+    .product-info {
+        padding: 1rem;
     }
-    .category-nav { top: 115px; }
-    .category-nav ul {
-        justify-content: flex-start;
-        overflow-x: auto;
-        padding-bottom: 0.5rem;
+
+    .product-title {
+        font-size: 0.95rem;
     }
-    .modal-content { padding: 1.5rem; width: 95%; }
-    .product-card:hover { transform: translateY(-4px); }
+
+    .product-price {
+        font-size: 1.1rem;
+    }
+
+    .product-card:hover {
+        transform: translateY(-4px);
+    }
 }
 
 @media (max-width: 480px) {
