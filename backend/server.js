@@ -98,15 +98,13 @@ app.post("/produtos", authenticate, isAdmin, async (req, res) => {
 
 app.put("/produtos/:id", authenticate, isAdmin, async (req, res) => {
     try {
-        const { name, price, category, stock, image, description, badge } = req.body;
+        const fields = ['name', 'price', 'category', 'stock', 'image', 'description', 'badge'];
         const updateData = {};
-        if (name !== undefined) updateData.name = name;
-        if (price !== undefined) updateData.price = parseFloat(price);
-        if (category !== undefined) updateData.category = category;
-        if (stock !== undefined) updateData.stock = parseInt(stock);
-        if (image !== undefined) updateData.image = image;
-        if (description !== undefined) updateData.description = description;
-        if (badge !== undefined) updateData.badge = badge;
+        
+        fields.forEach(field => {
+            if (req.body[field] !== undefined) updateData[field] = req.body[field];
+        });
+
         const updated = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true });
         if (!updated) return res.status(404).json({ error: "Produto não encontrado" });
         res.json(updated);
