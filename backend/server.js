@@ -90,7 +90,7 @@ app.post("/produtos", authenticate, isAdmin, async (req, res) => {
     try {
         const { name, price, category, stock, image, description, badge } = req.body;
         if (!name || !price) return res.status(400).json({ error: "Nome e preço são obrigatórios" });
-        const p = new Product({ name, price: parseFloat(price), category: category || "Outros", stock: parseInt(stock) || 0, image: image || "https://picsum.photos/id/100/300/200", description: description || "", badge: badge || "" });
+        const p = new Product({ name, price: parseFloat(price), category: category || "Outros", stock: parseInt(stock) || 0, image: image || "", description: description || "", badge: badge || "" });
         await p.save();
         res.status(201).json(p);
     } catch (err) { res.status(500).json({ error: err.message }); }

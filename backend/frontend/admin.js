@@ -305,15 +305,13 @@ function openProductModal(product = null) {
     modal.onclick = (e) => { if (e.target === modal) closeModal(); };
 }
 
-function previewImage(input) {
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const preview = document.getElementById("imgPreview");
-            preview.src = e.target.result;
-            preview.style.display = "block";
-        };
-        reader.readAsDataURL(input.files[0]);
+function previewImage(url) {
+    const preview = document.getElementById("imgPreview");
+    if (url) {
+        preview.src = url;
+        preview.style.display = "block";
+    } else {
+        preview.style.display = "none";
     }
 }
 
@@ -323,33 +321,14 @@ async function saveProduct(id) {
     const category = document.getElementById("prodCategory").value;
     const stock = parseInt(document.getElementById("prodStock").value) || 0;
     const description = document.getElementById("prodDesc").value;
-    const fileInput = document.getElementById("prodImage");
+    const image = document.getElementById("prodImage").value;
 
     if (!name || !price) {
         Swal.fire("Erro", "Nome e preço são obrigatórios", "error");
         return;
     }
 
-    let image = null;
-    if (fileInput.files && fileInput.files[0]) {
-        const formData = new FormData();
-        formData.append("image", fileInput.files[0]);
-        try {
-            const uploadRes = await fetchWithAuth(`${API_URL}/upload`, {
-                method: "POST",
-                body: formData
-            });
-            if (!uploadRes.ok) throw new Error("Falha no upload");
-            const uploadData = await uploadRes.json();
-            image = uploadData.imageUrl;
-        } catch (err) {
-            Swal.fire("Erro no upload", err.message, "error");
-            return;
-        }
-    }
-
-    const body = { name, price, category, stock, description };
-    if (image) body.image = image;
+    const body = { name, price, category, stock, description, image };
 
     try {
         const url = id && id !== 'null' ? `${API_URL}/produtos/${id}` : `${API_URL}/produtos`;
