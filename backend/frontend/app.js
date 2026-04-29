@@ -61,10 +61,17 @@ function updateCartBadge() {
 function updateFavBadge() {
     const b = document.getElementById("favCount");
     if (b) {
-        const count = AppState.favorites.length;
+        // Filtra para garantir que não existam IDs inválidos contando no badge
+        const count = AppState.favorites.filter(id => id && id !== "null" && id !== "undefined").length;
         b.innerText = count;
-        b.style.display = count > 0 ? 'flex' : 'none';
-        console.log('Favoritos badge atualizado:', count, 'Array:', AppState.favorites);
+        
+        if (count > 0) {
+            b.style.display = 'flex';
+            b.classList.add('fade-in');
+        } else {
+            b.style.display = 'none';
+        }
+        console.log('Badge Favoritos:', count);
     }
 }
 
