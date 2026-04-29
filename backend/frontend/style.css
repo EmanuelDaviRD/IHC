@@ -1315,61 +1315,71 @@ footer {
         font-size: 0.85rem;
     }
 
-    /* Modal de Filtro em Tela Cheia (Drawer Style) */
+    /* Padronização de Modais Mobile (Centralizados e Fixos) */
     .modal {
-        padding: 0 !important;
-        align-items: flex-end !important; /* Alinha ao rodapé */
-        z-index: 9999; /* Prioridade máxima para evitar congelamento */
-    }
-
-    .modal[style*="display: flex"] .modal-content.luxury-modal,
-    .modal[style*="display: flex"] .modal-content.cart-modal,
-    .modal[style*="display: flex"] .modal-content.product-modal {
-        animation: bottomSheetUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    }
-
-    @keyframes bottomSheetUp {
-        from { transform: translateY(100%); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
+        padding: 0;
+        align-items: center !important;
+        justify-content: center !important;
+        z-index: 9999;
     }
 
     .modal-content.luxury-modal,
     .modal-content.product-modal,
     .modal-content.cart-modal {
         position: fixed !important;
-        bottom: 0 !important;
-        left: 0 !important;
-        width: 100% !important;
-        max-height: 85vh !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: 95% !important;
+        max-height: 90vh !important;
         margin: 0 !important;
-        border-radius: 20px 20px 0 0 !important;
+        border-radius: 20px !important;
         z-index: 10000 !important;
         background: #1A1D20 !important;
-        padding: 3.5rem 1.5rem 1.5rem !important;
-        display: flex !important;
-        flex-direction: column !important;
+        padding: 1.5rem !important;
         border: 1px solid rgba(201, 169, 110, 0.3) !important;
-        border-bottom: none !important;
-        overflow-y: hidden !important;
+        display: block !important;
+        overflow: hidden !important; /* Trava o container externo */
+        animation: modalFadeIn 0.3s ease forwards !important;
     }
 
-    #cartItems {
-        flex: 1 !important;
+    @keyframes modalFadeIn {
+        from { opacity: 0; transform: translate(-50%, -48%); }
+        to { opacity: 1; transform: translate(-50%, -50%); }
+    }
+
+    /* Habilitar Rolagem Interna nos Contêineres de Conteúdo */
+    #cartItems, #productDetail, .luxury-modal {
         overflow-y: auto !important;
-        max-height: 60vh !important;
-        margin-bottom: 1rem !important;
-        padding-right: 5px;
+        max-height: calc(90vh - 120px) !important;
+        margin-bottom: 1rem;
+        padding-right: 8px;
     }
 
-    .cart-total, .coupon-area, .btn-checkout-premium, .btn-primary {
-        flex-shrink: 0 !important;
+    /* Ajuste para Imagem do Produto no Modal */
+    .product-modal img {
+        max-width: 100% !important;
+        height: auto !important;
+        display: block;
+        margin: 1rem auto !important;
     }
 
+    /* Botão de Fechar Acessível e Fixo */
     .close {
-        font-size: 2.8rem; /* 'X' bem grande para fácil toque */
-        top: 1rem;
-        right: 1.5rem;
-        z-index: 2005;
+        position: sticky !important;
+        top: 0 !important;
+        right: 0 !important;
+        z-index: 10100 !important;
+        background: #1A1D20;
+        font-size: 2.5rem !important;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        float: right;
+        margin-bottom: 0.5rem;
+        border-radius: 50%;
     }
 
     /* Menu da Conta Mobile (Abre para cima) */
