@@ -295,7 +295,8 @@ div class="file-input-wrapper">
                         URL da Imagem (ImgBB)
                     </label>
                     <input type="url" id="imagemURL" value="${product?.image || ''}" placeholder="https://ibb.co/xxx/yyy.jpg" style="width:100%;padding:0.75rem;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--light-bg);margin-top:0.25rem">
-                    ${product?.image ? `<img src="${product.image}" id="imgPreview" class="image-preview" style="width:100%;max-width:300px;height:200px;object-fit:cover;border-radius:var(--radius-sm);margin-top:0.5rem;display:block;box-shadow:var(--shadow)">` : ''}
+
+
                 </div>
                 <div style="display:flex;gap:1rem;margin-top:1rem;">
                     <button class="btn btn-save" onclick="saveProduct('${product?._id || product?.id || 'null'}')"><i class="fas fa-save"></i> Salvar</button>
