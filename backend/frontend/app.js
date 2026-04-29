@@ -49,8 +49,13 @@ function updateCartBadge() {
 
 function updateFavBadge() {
     const b = document.getElementById("favCount");
-    if (b) b.innerText = AppState.favorites.length;
+    if (b) {
+        const count = AppState.favorites.length;
+        b.innerText = count;
+        b.style.display = count > 0 ? 'flex' : 'none';
+    }
 }
+
 
 async function loadProducts() {
     const app = document.getElementById("app");
@@ -245,10 +250,8 @@ function renderCartModal() {
         return;
     }
 
-    el.innerHTML = `
-            <div class="luxury-modal-header">
-            <div class="bag-icon-group"><i class="fas fa-shopping-bag"></i> Meu Carrinho</div>
-        </div>
+        el.innerHTML = `
+
         
         <div class="luxury-branding">
             <i class="fas fa-crown gold-crown"></i>

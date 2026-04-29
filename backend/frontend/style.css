@@ -55,12 +55,13 @@
 }
 
 .modal-content.cart-modal {
-    background-color: var(--dark) !important;
+    background: #121212 !important;
     border: 1px solid rgba(201, 169, 110, 0.3) !important;
     border-radius: 24px;
     box-shadow: 0 30px 60px rgba(0,0,0,0.8), 0 0 30px rgba(201, 169, 110, 0.1) !important;
     padding: 3rem;
 }
+
 
 .luxury-modal-header {
     display: flex;
@@ -100,15 +101,16 @@
 }
 
 .luxury-field {
-    background: var(--charcoal) !important;
-    border: 1px solid rgba(201, 169, 110, 0.1) !important;
-    color: var(--bronze) !important;
+    background: #1A1D20 !important;
+    border: 1px solid rgba(201, 169, 110, 0.2) !important;
+    color: white !important;
     padding: 1.2rem 1.5rem !important;
     border-radius: 8px !important;
     font-family: 'Inter', sans-serif;
     font-size: 0.9rem;
     transition: var(--transition);
 }
+
 
 .luxury-field:focus {
     border-color: var(--bronze) !important;
@@ -988,14 +990,15 @@ footer {
     width: 100%;
     padding: 0.9rem 1rem;
     margin-bottom: 1rem;
-    border: 1px solid var(--border);
+    border: 1px solid rgba(201, 169, 110, 0.2);
     border-radius: var(--radius-sm);
     font-size: 1rem;
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--text);
+    background: #1A1D20;
+    color: white;
     transition: var(--transition);
     font-family: 'Inter', sans-serif;
 }
+
 
 #loginForm input:focus, #registerForm input:focus,
 #checkoutForm input:focus, #checkoutForm select:focus {
@@ -1163,8 +1166,9 @@ footer {
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--light-bg);
+    background: #121212;
 }
+
 
 ::-webkit-scrollbar-thumb {
     background: var(--primary);
