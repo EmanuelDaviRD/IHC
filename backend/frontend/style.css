@@ -1577,3 +1577,8 @@ footer {
     border-radius: 20px;
     width: 90%;
 }
+
+/* Garante que os alertas do SweetAlert2 fiquem sempre acima dos modais */
+.swal2-container {
+    z-index: 20000 !important;
+}

@@ -211,14 +211,47 @@ function setupFilterListeners() {
 }
 
 window.addToCart = function(id) {
+    const prod = AppState.products.find(p => String(p.id||p._id) === String(id));
+    if (!prod) return;
+
+    if (prod.stock <= 0) {
+        Swal.fire({ 
+            title: "Ops! Esgotado", 
+            text: "Este produto não possui mais unidades em estoque.",
+            icon: "warning", 
+            position: 'top',
+            background: '#1A1D20', 
+            color: '#FFF', 
+            confirmButtonColor: '#C9A96E'
+        });
+        return;
+    }
+
     let item = AppState.cart.find(i => String(i.id||i._id) === String(id));
-    if (item) item.qty++;
-    else { const prod = AppState.products.find(p => String(p.id||p._id) === String(id)); if (prod) AppState.cart.push({...prod, qty:1}); }
+    if (item) {
+        if (item.qty >= prod.stock) {
+            Swal.fire({ 
+                title: "Limite de estoque", 
+                text: "Você já adicionou todas as unidades disponíveis.",
+                icon: "info", 
+                position: 'top',
+                background: '#1A1D20', 
+                color: '#FFF', 
+                confirmButtonColor: '#C9A96E'
+            });
+            return;
+        }
+        item.qty++;
+    } else {
+        AppState.cart.push({...prod, qty: 1});
+    }
+
     saveLocalCartFavs(); updateCartBadge();
     Swal.fire({ 
         title: "Adicionado!", 
         icon: "success", 
         timer: 1500, 
+        position: 'top',
         showConfirmButton: false, 
         background: '#1A1D20',
         color: '#FFF',
@@ -254,6 +287,7 @@ function showProductModal(id) {
 
     const isFav = AppState.favorites.some(favId => String(favId) === String(id));
     const desc = p.description || "Sem descrição.";
+    const stockWarning = p.stock > 0 && p.stock < 10 ? `<div class="stock-warning">Restam apenas ${p.stock} unids!</div>` : p.stock === 0 ? `<div class="stock-warning">Produto Esgotado</div>` : '';
 
     const related = AppState.products
         .filter(item => item.category === p.category && String(item.id || item._id) !== String(id))
@@ -263,6 +297,7 @@ function showProductModal(id) {
         <h2>${p.name}</h2>
         <div class="product-category">${p.category}</div>
         <img src="${p.image}" style="width:100%;border-radius:1rem;margin:1rem 0" alt="${p.name}">
+        ${stockWarning}
 
         <div class="product-info-menu">
             <div class="menu-section active">
@@ -381,7 +416,7 @@ window.checkoutWhatsApp = async () => {
     }
 
     if (!AppState.currentUser) {
-        Swal.fire({ title: "Atenção", text: "Você precisa estar logado para finalizar o pedido.", icon: "info", confirmButtonColor: "#C9A96E" });
+        Swal.fire({ title: "Atenção", text: "Você precisa estar logado para finalizar o pedido.", icon: "info", position: 'top', confirmButtonColor: "#C9A96E" });
         openModal("authModal");
         return;
     }
@@ -394,7 +429,7 @@ window.checkoutWhatsApp = async () => {
             paymentMethod: "whatsapp"
         };
 
-        Swal.fire({ title: "Processando...", didOpen: () => Swal.showLoading(), allowOutsideClick: false });
+        Swal.fire({ title: "Processando...", didOpen: () => Swal.showLoading(), position: 'top', allowOutsideClick: false });
 
         const res = await fetch(`${API_URL}/pedidos`, {
             method: "POST",
@@ -409,7 +444,7 @@ window.checkoutWhatsApp = async () => {
         
         Swal.close();
     } catch (err) {
-        Swal.fire({ title: "Erro no Checkout", text: err.message, icon: "error", confirmButtonColor: "#C9A96E" });
+        Swal.fire({ title: "Erro no Checkout", text: err.message, icon: "error", position: 'top', confirmButtonColor: "#C9A96E" });
         return;
     }
 
