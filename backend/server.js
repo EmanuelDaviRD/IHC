@@ -20,7 +20,7 @@ const PORT = process.env.PORT || 3000;
 const SECRET = process.env.JWT_SECRET;
 
 if (!SECRET) {
-    console.warn("⚠️ JWT_SECRET não definido. Usando padrão para desenvolvimento.");
+
 }
 
 app.use(cors());
@@ -65,7 +65,7 @@ async function seedAdmin() {
                 role: "admin"
             });
             await admin.save();
-            console.log("👤 Admin padrão criado no MongoDB: admin@edclaudia.com / admin123");
+
         }
     } catch (err) { console.error("❌ Erro ao criar admin inicial:", err.message); }
 }
@@ -73,7 +73,7 @@ async function seedAdmin() {
 connectDB().then(async () => { 
     await seedAdmin(); 
 }).catch(err => {
-    console.error("❌ Erro ao conectar no MongoDB:", err.message);
+
 });
 
 app.get("/", (req, res) => { res.sendFile(path.join(__dirname, "frontend", "landing.html")); });
@@ -257,25 +257,22 @@ app.post("/settings", authenticate, isAdmin, async (req, res) => {
 });
 
 app.use(express.static(path.join(__dirname, "frontend"), {
-    fallthrough: true // Permite que rotas não encontradas sigam para o fallback do SPA
+    fallthrough: true
 }));
 
-// Garante que arquivos inexistentes na pasta uploads não retornem o index.html
 app.use("/uploads", (req, res) => res.status(404).json({ error: "Arquivo não encontrado" }));
 
-// Proteção para rotas de API não encontradas
 app.use(['/produtos', '/pedidos', '/usuarios', '/settings', '/login', '/register'], (req, res) => {
     res.status(404).json({ error: "Rota de API não encontrada" });
 });
 
-// Fallback para o frontend (SPA)
 app.get(/.*/, (req, res) => {
     res.sendFile(path.join(__dirname, "frontend", "index.html"));
 });
 
 app.listen(PORT, () => {
-    console.log(`🚀 Servidor Online na porta ${PORT}`);
-    console.log(`💾 Banco de Dados: MongoDB Ativo`);
-    console.log(`📁 Modo: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`📱 Destino WhatsApp: 5588981078835`);
+
+
+
+
 });

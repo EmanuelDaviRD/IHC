@@ -9,7 +9,7 @@ cloudinary.config({
 const uploadToCloudinary = async (filePath, folder = 'edclaudia') => {
     try {
         if (!process.env.CLOUDINARY_CLOUD_NAME) {
-            console.log('⚠️  Cloudinary não configurado, usando upload local');
+
             return null;
         }
         const result = await cloudinary.uploader.upload(filePath, {
@@ -19,7 +19,7 @@ const uploadToCloudinary = async (filePath, folder = 'edclaudia') => {
         });
         return result.secure_url;
     } catch (error) {
-        console.error('Erro Cloudinary:', error);
+
         return null;
     }
 };

@@ -21,7 +21,7 @@ function saveLocalCartFavs() {
 }
 
 function loadLocalCartFavs() {
-    console.log('Carregando localStorage favoritos...');
+
     
     const c = localStorage.getItem("edclaudia_cart");
     AppState.cart = [];
@@ -32,7 +32,7 @@ function loadLocalCartFavs() {
             const parsed = JSON.parse(c);
             AppState.cart = Array.isArray(parsed) ? parsed.filter(i => i && (i.id || i._id)) : [];
         } catch (e) {
-            console.error('Erro ao parse cart:', e);
+
         }
     }
     
@@ -40,15 +40,15 @@ function loadLocalCartFavs() {
     if (f) {
         try {
             const parsed = JSON.parse(f);
-            console.log('Parsed favoritos:', parsed);
+
             AppState.favorites = Array.isArray(parsed) ? parsed.filter(id => id && String(id).trim() !== "" && id !== "undefined" && id !== "null") : [];
-            console.log('Filtrado favoritos:', AppState.favorites);
+
         } catch (e) {
-            console.error('Erro ao parse favoritos:', e);
+
         }
     }
     
-    console.log('Final favoritos array:', AppState.favorites, 'Length:', AppState.favorites.length);
+
     updateCartBadge(); updateFavBadge();
 }
 
@@ -70,15 +70,13 @@ function updateFavBadge() {
 async function loadProducts() {
     const app = document.getElementById("app");
     if (!app) {
-        console.error("❌ Erro Crítico: O container <div id='app'> não foi encontrado no HTML. Verifique o index.html.");
+
         return;
     }
 
-    // Inicia o estado de carregamento visual (limpa o texto 'Carregando produtos...')
     app.innerHTML = `<div class="skeleton-grid">${'<div class="skeleton-card"></div>'.repeat(4)}</div>`;
 
     try {
-        console.log(`📡 Conectando à API: ${API_URL}/produtos...`);
         const res = await fetch(`${API_URL}/produtos`, { method: 'GET' });
         
         if (!res.ok) throw new Error(`Erro ${res.status}: Não foi possível buscar os produtos.`);
@@ -90,7 +88,7 @@ async function loadProducts() {
         AppState.productsLoaded = true;
         renderCatalog();
     } catch (err) {
-        console.error("❌ Erro ao conectar com a API de produtos:", err);
+
         app.innerHTML = `
             <div style="text-align:center;padding:4rem;color:var(--text-muted)">
                 <i class="fas fa-exclamation-circle" style="font-size:3rem;margin-bottom:1rem;color:#ff6b6b"></i>
@@ -264,14 +262,14 @@ window.toggleFavorite = function(id) {
     const sid = String(id);
     const idx = AppState.favorites.findIndex(favId => String(favId) === sid);
     
-    console.log('Toggle favorite:', sid, 'Index found:', idx, 'Array atual:', AppState.favorites);
+
     
     if (idx > -1) {
         AppState.favorites.splice(idx, 1);
-        console.log('Removido favorito');
+
     } else {
         AppState.favorites.push(sid);
-        console.log('Adicionado favorito');
+
     }
     
     saveLocalCartFavs();

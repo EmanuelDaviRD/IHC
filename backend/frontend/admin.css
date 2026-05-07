@@ -35,9 +35,6 @@ body {
     color: var(--text);
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
-}
-
-/* ===== LOGIN SCREEN ===== */
 .admin-login-screen {
     min-height: 100vh;
     display: flex;
@@ -184,7 +181,7 @@ body {
     color: var(--primary);
 }
 
-/* ===== ADMIN APP LAYOUT ===== */
+
 .admin-app {
     display: flex;
     min-height: 100vh;
@@ -249,7 +246,7 @@ body {
     margin: 0 auto;
 }
 
-/* ===== SIDEBAR ===== */
+
 .admin-sidebar {
     width: 260px;
     background: var(--bg-card);
@@ -379,7 +376,7 @@ body {
     color: white;
 }
 
-/* ===== STATS GRID ===== */
+
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -443,7 +440,7 @@ body {
     letter-spacing: 0.5px;
 }
 
-/* ===== SECTION CARDS ===== */
+
 .section-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
@@ -463,7 +460,7 @@ body {
     color: var(--text);
 }
 
-/* ===== CHART CONTAINER ===== */
+
 .chart-container {
     background: var(--bg-card);
     border: 1px solid var(--border);
@@ -480,7 +477,7 @@ body {
     color: var(--text-dim);
 }
 
-/* ===== DATA TABLES ===== */
+
 .data-table {
     width: 100%;
     border-collapse: collapse;
@@ -517,7 +514,7 @@ body {
     border: 1px solid var(--border);
 }
 
-/* ===== BUTTONS ===== */
+
 .btn {
     padding: 0.7rem 1.4rem;
     border-radius: var(--radius-sm);
@@ -592,7 +589,7 @@ body {
     background: var(--bg-hover);
 }
 
-/* ===== BADGES ===== */
+
 .badge {
     display: inline-flex;
     align-items: center;
@@ -614,7 +611,7 @@ body {
 .status-entregue { background: rgba(34, 197, 94, 0.3); color: #22c55e; }
 .status-cancelado { background: rgba(248, 113, 113, 0.3); color: var(--danger); }
 
-/* ===== MODALS ===== */
+
 .admin-modal {
     display: none;
     position: fixed;
@@ -667,7 +664,7 @@ body {
     color: var(--text);
 }
 
-/* ===== FORMS ===== */
+
 .admin-form {
     display: flex;
     flex-direction: column;
@@ -759,7 +756,7 @@ body {
     cursor: pointer;
 }
 
-/* ===== LAYOUT EDITOR ===== */
+
 .layout-section {
     margin-bottom: 2.5rem;
     padding-bottom: 2rem;
@@ -855,7 +852,7 @@ body {
     border: 2px solid var(--border);
 }
 
-/* ===== LOADING ===== */
+
 .loading {
     text-align: center;
     padding: 4rem 2rem;
@@ -868,7 +865,7 @@ body {
     color: var(--primary);
 }
 
-/* ===== RESPONSIVE ===== */
+
 @media (max-width: 1024px) {
     .admin-main {
         margin-left: 0;

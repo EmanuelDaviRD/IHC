@@ -131,7 +131,7 @@ async function fetchWithAuth(url, options = {}) {
 
 async function loadDashboard() {
     try {
-        console.log("📊 Carregando dados do Dashboard...");
+
         const [productsRes, ordersRes, usersRes] = await Promise.all([
             fetch(`${API_URL}/produtos`),
             fetchWithAuth(`${API_URL}/pedidos`),
@@ -148,7 +148,7 @@ async function loadDashboard() {
             usersRes.json()
         ]);
 
-        console.log("✅ Dados do Dashboard carregados.");
+
 
         const totalSales = ordersCache.reduce((s, o) => s + o.total, 0);
         const totalOrders = ordersCache.length;
@@ -189,7 +189,7 @@ async function loadDashboard() {
 
         renderSalesChart();
     } catch (err) {
-        console.error("❌ Erro no Dashboard:", err);
+
         document.getElementById("adminContent").innerHTML = `<div class="section-card"><h3 style="color:#ff4d4d">Erro ao carregar Dashboard</h3><p>Causa: ${err.message}</p></div>`;
     }
 }
@@ -266,7 +266,7 @@ async function loadProductsPage() {
             </div>
         `;
     } catch (err) {
-        console.error("❌ Erro na página de produtos:", err);
+
         document.getElementById("adminContent").innerHTML = `<div class="section-card"><h3 style="color:#ff4d4d">Erro ao carregar produtos</h3><p>${err.message}</p></div>`;
     }
 }
