@@ -1,0 +1,154 @@
+{
+  "users": [
+    {
+      "_id": "1715625600000",
+      "name": "Admin",
+      "email": "admin@edclaudia.com",
+      "password": "$2b$10$abcdefghijklmnopqrstuvwxyz123456789",
+      "role": "admin",
+      "phone": "",
+      "address": "",
+      "createdAt": "2024-05-13T00:00:00.000Z"
+    }
+  ],
+  "products": [
+    {
+      "_id": "1",
+      "name": "Shampoo Nutritivo",
+      "price": 45.90,
+      "category": "Cabelos",
+      "stock": 15,
+      "image": "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&h=300&fit=crop",
+      "description": "Shampoo nutritivo para cabelos secos e danificados",
+      "sales": 0,
+      "featured": false,
+      "badge": "bestseller",
+      "createdAt": "2024-05-13T00:00:00.000Z"
+    },
+    {
+      "_id": "2",
+      "name": "Condicionador Premium",
+      "price": 52.90,
+      "category": "Cabelos",
+      "stock": 12,
+      "image": "https://images.unsplash.com/photo-1599599810694-e3007dc796d7?w=400&h=300&fit=crop",
+      "description": "Condicionador premium com proteínas naturais",
+      "sales": 0,
+      "featured": false,
+      "badge": "new",
+      "createdAt": "2024-05-13T00:00:00.000Z"
+    },
+    {
+      "_id": "3",
+      "name": "Máscara Facial Hidratante",
+      "price": 68.90,
+      "category": "Rosto",
+      "stock": 20,
+      "image": "https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=400&h=300&fit=crop",
+      "description": "Máscara facial com aloe vera e vitamina C",
+      "sales": 0,
+      "featured": true,
+      "badge": "",
+      "createdAt": "2024-05-13T00:00:00.000Z"
+    },
+    {
+      "_id": "4",
+      "name": "Sérum Facial Anti-Idade",
+      "price": 89.90,
+      "category": "Rosto",
+      "stock": 10,
+      "image": "https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=400&h=300&fit=crop",
+      "description": "Sérum com retinol e ácido hialurônico",
+      "sales": 0,
+      "featured": false,
+      "badge": "sale",
+      "createdAt": "2024-05-13T00:00:00.000Z"
+    },
+    {
+      "_id": "5",
+      "name": "Creme Corporal Hidratante",
+      "price": 39.90,
+      "category": "Corpo",
+      "stock": 25,
+      "image": "https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=400&h=300&fit=crop",
+      "description": "Creme corporal com manteiga de karité",
+      "sales": 0,
+      "featured": false,
+      "badge": "bestseller",
+      "createdAt": "2024-05-13T00:00:00.000Z"
+    },
+    {
+      "_id": "6",
+      "name": "Óleo Corporal Aromático",
+      "price": 49.90,
+      "category": "Corpo",
+      "stock": 18,
+      "image": "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=400&h=300&fit=crop",
+      "description": "Óleo corporal com aromas relaxantes",
+      "sales": 0,
+      "featured": false,
+      "badge": "new",
+      "createdAt": "2024-05-13T00:00:00.000Z"
+    },
+    {
+      "_id": "7",
+      "name": "Batom Matte Profissional",
+      "price": 34.90,
+      "category": "Maquiagem",
+      "stock": 30,
+      "image": "https://images.unsplash.com/photo-1596462502278-af60762c3598?w=400&h=300&fit=crop",
+      "description": "Batom matte com longa duração",
+      "sales": 0,
+      "featured": true,
+      "badge": "",
+      "createdAt": "2024-05-13T00:00:00.000Z"
+    },
+    {
+      "_id": "8",
+      "name": "Paleta de Sombras 12 cores",
+      "price": 59.90,
+      "category": "Maquiagem",
+      "stock": 14,
+      "image": "https://images.unsplash.com/photo-1614730321751-fcc4623d1d6f?w=400&h=300&fit=crop",
+      "description": "Paleta de sombras com pigmentação intensa",
+      "sales": 0,
+      "featured": false,
+      "badge": "",
+      "createdAt": "2024-05-13T00:00:00.000Z"
+    },
+    {
+      "_id": "9",
+      "name": "Perfume Floral 100ml",
+      "price": 129.90,
+      "category": "Perfumaria",
+      "stock": 8,
+      "image": "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&h=300&fit=crop",
+      "description": "Perfume floral com notas de rosas e jasmim",
+      "sales": 0,
+      "featured": false,
+      "badge": "bestseller",
+      "createdAt": "2024-05-13T00:00:00.000Z"
+    },
+    {
+      "_id": "10",
+      "name": "Desodorante Natural",
+      "price": 29.90,
+      "category": "Higiene",
+      "stock": 40,
+      "image": "https://images.unsplash.com/photo-1599599810694-e3007dc796d7?w=400&h=300&fit=crop",
+      "description": "Desodorante natural com 24h de proteção",
+      "sales": 0,
+      "featured": false,
+      "badge": "new",
+      "createdAt": "2024-05-13T00:00:00.000Z"
+    }
+  ],
+  "orders": [],
+  "settings": {
+    "primaryColor": "#c9a96e",
+    "accentColor": "#7c6fae",
+    "siteTitle": "Edcláudia Ribeiro",
+    "welcomeText": "Beleza que inspira",
+    "logoUrl": ""
+  }
+}
