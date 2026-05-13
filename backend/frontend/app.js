@@ -49,7 +49,8 @@ function loadLocalCartFavs() {
     }
     
 
-    updateCartBadge(); updateFavBadge();
+    updateCartBadge();
+    updateFavBadge();
 }
 
 function updateCartBadge() {

@@ -50,7 +50,7 @@ function isAdmin(req, res, next) {
 }
 
 // Inicializar dados
-initializeData();
+// Called in startServer()
 
 // ===== ROTAS =====
 app.get("/", (req, res) => { res.sendFile(path.join(__dirname, "frontend", "landing.html")); });
@@ -67,8 +67,15 @@ app.get("/produtos", (req, res) => {
 app.post("/produtos", authenticate, isAdmin, (req, res) => {
     try {
         const { name, price, category, stock, image, description, badge } = req.body;
-        if (!name || !price) return res.status(400).json({ error: "Nome e preço são obrigatórios" });
-        const p = Product.create({ name, price: parseFloat(price), category: category || "Outros", stock: parseInt(stock) || 0, image, description: description || "", badge: badge || "" });
+        if (!name || price === undefined) return res.status(400).json({ error: "Nome e preço são obrigatórios" });
+
+        const parsedPrice = parseFloat(price);
+        const parsedStock = parseInt(stock) || 0;
+
+        if (isNaN(parsedPrice) || parsedPrice < 0) return res.status(400).json({ error: "Preço inválido" });
+        if (isNaN(parsedStock) || parsedStock < 0) return res.status(400).json({ error: "Estoque inválido" });
+
+        const p = Product.create({ name, price: parsedPrice, category: category || "Outros", stock: parsedStock, image, description: description || "", badge: badge || "" });
         res.status(201).json(p);
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
@@ -77,9 +84,21 @@ app.put("/produtos/:id", authenticate, isAdmin, (req, res) => {
     try {
         const fields = ['name', 'price', 'category', 'stock', 'image', 'description', 'badge'];
         const updateData = {};
-        
+
         fields.forEach(field => {
-            if (req.body[field] !== undefined) updateData[field] = req.body[field];
+            if (req.body[field] !== undefined) {
+                if (field === 'price') {
+                    const val = parseFloat(req.body[field]);
+                    if (isNaN(val) || val < 0) return; // Skip invalid price
+                    updateData[field] = val;
+                } else if (field === 'stock') {
+                    const val = parseInt(req.body[field]);
+                    if (isNaN(val) || val < 0) return; // Skip invalid stock
+                    updateData[field] = val;
+                } else {
+                    updateData[field] = req.body[field];
+                }
+            }
         });
 
         const updated = Product.findByIdAndUpdate(req.params.id, updateData);
@@ -263,7 +282,12 @@ app.get(/.*/, (req, res) => {
     res.sendFile(path.join(__dirname, "frontend", "index.html"));
 });
 
-app.listen(PORT, () => {
-    console.log(`✅ Servidor rodando na porta ${PORT}`);
-    console.log(`📍 Admin: admin@edclaudia.com / admin123`);
-});
+async function startServer() {
+    await initializeData();
+    app.listen(PORT, () => {
+        console.log(`✅ Servidor rodando na porta ${PORT}`);
+        console.log(`📍 Admin: admin@edclaudia.com / admin123`);
+    });
+}
+
+startServer();
