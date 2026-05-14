@@ -27,7 +27,12 @@ const {
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const SECRET = 'LOCAL_JWT_SECRET_CHANGE_ME';
+const SECRET = process.env.JWT_SECRET;
+
+if (!SECRET) {
+  // Continua mesmo sem SECRET para não travar o boot; requests falharão.
+  console.warn('JWT_SECRET não definido no .env');
+}
 
 app.use(cors());
 app.use(express.json());
@@ -299,16 +304,11 @@ app.use(['/produtos', '/pedidos', '/usuarios', '/settings', '/login', '/register
   res.status(404).json({ error: 'Rota de API não encontrada' });
 });
 
-app.get(/.*/, (req, res) => {
+app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
 });
-
-// Guard: caso algum outro arquivo/instância esteja sendo executado,
-// garantimos que este servidor sempre use o mesmo SECRET local.
-if (!SECRET || typeof SECRET !== 'string') {
-  console.warn('SECRET inválido no server.js. Usando fallback LOCAL_JWT_SECRET_CHANGE_ME');
-}
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+

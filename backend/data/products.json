@@ -1,0 +1,112 @@
+[
+  {
+    "id": "p1",
+    "name": "Perfume Floral Luxo",
+    "price": 129.9,
+    "category": "Novidades",
+    "stock": 25,
+    "image": "https://i.ibb.co/rKRBgSSn/MUV-Logo.jpg",
+    "description": "Fragrância marcante com toque floral e elegante.",
+    "sales": 18,
+    "badge": "new"
+  },
+  {
+    "id": "p2",
+    "name": "Creme Hidratante Brilho",
+    "price": 59.9,
+    "category": "Natura",
+    "stock": 40,
+    "image": "https://ibb.co/7Jg3w8s",
+    "description": "Hidratação intensa com acabamento luminoso.",
+    "sales": 27,
+    "badge": "bestseller"
+  },
+  {
+    "id": "p3",
+    "name": "Desodorante Kit Proteção",
+    "price": 79.9,
+    "category": "Kits",
+    "stock": 12,
+    "image": "https://ibb.co/2g8QmYH",
+    "description": "Kit com proteção diária e fragrância suave.",
+    "sales": 35,
+    "badge": "sale"
+  },
+  {
+    "id": "p4",
+    "name": "Kit Presentes Glam",
+    "price": 149.9,
+    "category": "Kits",
+    "stock": 7,
+    "image": "https://ibb.co/4Jt9p2w",
+    "description": "Presente completo para impressionar.",
+    "sales": 42,
+    "badge": "bestseller"
+  },
+  {
+    "id": "p5",
+    "name": "Óleo Corporal Seda",
+    "price": 69.9,
+    "category": "O Boticário",
+    "stock": 20,
+    "image": "https://ibb.co/1mRz9yS",
+    "description": "Nutrição profunda e sensação de seda.",
+    "sales": 9,
+    "badge": ""
+  },
+  {
+    "id": "p6",
+    "name": "Sabonete Líquido Perfumado",
+    "price": 34.9,
+    "category": "Acessórios",
+    "stock": 60,
+    "image": "https://ibb.co/Z6K4p1T",
+    "description": "Limpeza suave com perfume delicioso.",
+    "sales": 6,
+    "badge": ""
+  },
+  {
+    "id": "p7",
+    "name": "Loção Pós Banho Relax",
+    "price": 54.9,
+    "category": "Avon",
+    "stock": 9,
+    "image": "https://ibb.co/0ZbHq6n",
+    "description": "Toque relaxante e maciez prolongada.",
+    "sales": 15,
+    "badge": "sale"
+  },
+  {
+    "id": "p8",
+    "name": "Hidratante Mãos Aroma",
+    "price": 24.9,
+    "category": "Acessórios",
+    "stock": 100,
+    "image": "https://ibb.co/v4d3YQn",
+    "description": "Hidratação para o dia a dia, com aroma delicado.",
+    "sales": 4,
+    "badge": ""
+  },
+  {
+    "id": "p9",
+    "name": "Perfume Elegance 100ml",
+    "price": 199.9,
+    "category": "Outros",
+    "stock": 5,
+    "image": "https://ibb.co/C0f5g2K",
+    "description": "Elegância em cada borrifada. Ideal para ocasiões especiais.",
+    "sales": 52,
+    "badge": "bestseller"
+  },
+  {
+    "id": "p10",
+    "name": "Kit Cuidados Essenciais",
+    "price": 109.9,
+    "category": "Outros",
+    "stock": 18,
+    "image": "https://ibb.co/tp7w7rN",
+    "description": "Rotina essencial de cuidado com sensação premium.",
+    "sales": 21,
+    "badge": "new"
+  }
+]
