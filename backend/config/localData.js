@@ -9,7 +9,6 @@ const FILES = {
 };
 
 function getDefaultSeedProducts() {
-  // Links de imagem podem ser do imgBB/qualquer URL pública
   return [
     {
       id: 'p1',
@@ -132,13 +131,11 @@ function seedIfEmpty() {
 
   const users = readJSON(FILES.users, null);
   if (!users || !Array.isArray(users) || users.length === 0) {
-    // Admin inicial (como no projeto original, mas sem bcrypt para simplificar/local)
     writeJSON(FILES.users, [
       {
         id: 'u-admin',
         name: 'Admin',
         email: 'admin@edclaudia.com',
-        // senha em texto puro (local). Mantemos o JWT funcionando.
         password: 'admin123',
         role: 'admin',
         phone: '',
@@ -202,7 +199,6 @@ function upsertProduct(id, body) {
     }, {})
   };
 
-  // normalize
   if (updated.price !== undefined) updated.price = Number(updated.price);
   if (updated.stock !== undefined) updated.stock = Number(updated.stock);
 
@@ -271,7 +267,6 @@ function listOrdersByCustomer(customerId) {
 function createOrder({ customerId, customerEmail, items, total, address, paymentMethod }) {
   const products = readJSON(FILES.products, []);
 
-  // validar estoque e aplicar decremento
   for (const item of items) {
     const prod = products.find(p => String(p.id) === String(item.id));
     if (!prod) return { ok: false, error: 'Produto não encontrado' };
@@ -295,8 +290,6 @@ function createOrder({ customerId, customerEmail, items, total, address, payment
     address: address || '',
     paymentMethod: paymentMethod || 'card',
     status: 'Pendente',
-    pixQRCode: '',
-    mercadoPagoId: '',
     date: new Date().toISOString()
   };
 

@@ -60,7 +60,6 @@ function isAdmin(req, res, next) {
   next();
 }
 
-// Seed local já é feito dentro de localData.js
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'frontend', 'landing.html')));
 app.get('/loja', (req, res) => res.sendFile(path.join(__dirname, 'frontend', 'index.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'frontend', 'admin.html')));
@@ -302,12 +301,6 @@ app.use(['/produtos', '/pedidos', '/usuarios', '/settings', '/login', '/register
 app.get(/.*/, (req, res) => {
   res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
 });
-
-// Guard: caso algum outro arquivo/instância esteja sendo executado,
-// garantimos que este servidor sempre use o mesmo SECRET local.
-if (!SECRET || typeof SECRET !== 'string') {
-  console.warn('SECRET inválido no server.js. Usando fallback LOCAL_JWT_SECRET_CHANGE_ME');
-}
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

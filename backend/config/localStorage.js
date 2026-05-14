@@ -30,7 +30,6 @@ function writeJSON(file, data) {
 }
 
 function uuidLike() {
-  // simple id for local objects
   return Math.random().toString(16).slice(2) + '-' + Date.now().toString(16);
 }
 
