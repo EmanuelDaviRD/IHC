@@ -1,4 +1,4 @@
-# Ed Claudia Store
+# IHC Store
 
 E-commerce platform built with Express.js and vanilla JavaScript. Features product management, user authentication, order management, and admin dashboard.
 

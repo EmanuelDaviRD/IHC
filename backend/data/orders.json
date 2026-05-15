@@ -1,1 +1,21 @@
-[]
+[
+  {
+    "id": "e17bfc9dbf5fe8-19e29af93c7",
+    "customerId": "u-admin",
+    "customerEmail": "admin@edclaudia.com",
+    "items": [
+      {
+        "id": "p3",
+        "name": "Desodorante Kit Proteção",
+        "price": 79.9,
+        "qty": 1,
+        "image": "https://ibb.co/2g8QmYH"
+      }
+    ],
+    "total": 79.9,
+    "address": "WhatsApp Checkout",
+    "paymentMethod": "whatsapp",
+    "status": "Pendente",
+    "date": "2026-05-15T03:30:33.031Z"
+  }
+]

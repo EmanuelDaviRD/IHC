@@ -292,7 +292,6 @@ h1, h2, h3, h4, h5, h6 {
     border-bottom: 1px solid rgba(201,169,110,0.2);
 }
 
-/* Bottom Navigation Bar */
 .bottom-nav {
     display: none; /* Escondido por padrão no desktop */
     position: fixed;

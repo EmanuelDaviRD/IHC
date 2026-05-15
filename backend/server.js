@@ -64,7 +64,6 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'frontend', 'landin
 app.get('/loja', (req, res) => res.sendFile(path.join(__dirname, 'frontend', 'index.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'frontend', 'admin.html')));
 
-// PRODUCTS
 app.get('/produtos', (req, res) => {
   try {
     res.json(listProducts());
@@ -120,7 +119,6 @@ app.delete('/produtos/:id', authenticate, isAdmin, (req, res) => {
   }
 });
 
-// AUTH
 app.post('/register', (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -149,13 +147,11 @@ app.post('/login', (req, res) => {
   }
 });
 
-// ORDERS
 app.post('/pedidos', authenticate, (req, res) => {
   try {
     const { items, total, address, paymentMethod } = req.body;
     if (!items || !total) return res.status(400).json({ error: 'Dados incompletos' });
 
-    // items do front: {id/_id, name, price, qty, image}
     const normalizedItems = items.map(it => ({
       id: it.id || it._id,
       name: it.name,
@@ -233,7 +229,6 @@ app.put('/admin/change-password', authenticate, isAdmin, (req, res) => {
   }
 });
 
-// UPLOAD (admin)
 app.post('/upload', authenticate, isAdmin, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'Nenhuma imagem enviada' });
@@ -249,7 +244,6 @@ app.post('/upload', authenticate, isAdmin, upload.single('image'), async (req, r
   }
 });
 
-// USERS + CHECK ADMIN + SETTINGS
 app.get('/usuarios', authenticate, isAdmin, (req, res) => {
   try {
     res.json(listUsers());
@@ -290,7 +284,6 @@ app.post('/settings', authenticate, isAdmin, (req, res) => {
   }
 });
 
-// Static
 app.use(express.static(path.join(__dirname, 'frontend'), { fallthrough: true }));
 app.use('/uploads', (req, res) => res.status(404).json({ error: 'Arquivo não encontrado' }));
 
