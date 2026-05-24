@@ -10,15 +10,25 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="admin.css">
+    <style>
+        #terminal-loader { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; padding: 2rem; font-family: 'JetBrains Mono', monospace; color: #00d4ff; overflow: hidden; }
+        .terminal-line { margin-bottom: 0.5rem; opacity: 0; transform: translateY(5px); animation: lineFadeIn 0.2s forwards; font-size: 0.9rem; }
+        .terminal-line.success { color: #00ffaa; }
+        @keyframes lineFadeIn { to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
 <body>
+
+<div id="terminal-loader">
+    <div id="terminal-content"></div>
+</div>
 
 <div id="adminLoginScreen" class="admin-login-screen">
     <div class="login-bg"></div>
     <div class="admin-login-box">
         <div class="login-logo">
-            <i class="fas fa-crown"></i>
-            <h2>IHC</h2>
+            <i class="fas fa-microchip"></i>
+            <h2>IHC STORE</h2>
             <p>Painel Administrativo</p>
         </div>
         <div class="login-form">
@@ -43,7 +53,7 @@
     
     <aside class="admin-sidebar">
         <div class="sidebar-header">
-            <i class="fas fa-crown"></i>
+            <i class="fas fa-microchip"></i>
             <div>
                 <h3>IHC Store</h3>
                 <span>Painel Admin</span>

@@ -7,7 +7,44 @@ let ordersCache = [];
 let customersCache = [];
 let salesChart = null;
 
+function playTerminalBeep() {
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'square';
+        const oscillatorFrequency = 1200;
+        osc.frequency.setValueAtTime(oscillatorFrequency, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+    } catch(e) {}
+}
+
+async function simulateBoot() {
+    const loader = document.getElementById("terminal-loader");
+    const content = document.getElementById("terminal-content");
+    if (!loader) return;
+    const lines = [
+        { text: "> ACCESSING ADMIN_RESTRICTED_AREA...", type: "normal" },
+        { text: "> AUTHENTICATING ROOT_USER...", type: "normal" },
+        { text: "[OK] SESSION ENCRYPTED", type: "success" },
+        { text: "> LOADING DASHBOARD_CORE...", type: "normal" }
+    ];
+    for (let i = 0; i < lines.length; i++) {
+        const line = document.createElement("div");
+        line.className = `terminal-line ${lines[i].type}`;
+        line.innerText = lines[i].text;
+        content.appendChild(line);
+        playTerminalBeep();
+        await new Promise(r => setTimeout(r, 150));
+    }
+    setTimeout(() => { loader.style.opacity = "0"; setTimeout(() => loader.remove(), 500); }, 500);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+    simulateBoot();
     const savedToken = localStorage.getItem("adminToken");
     if (savedToken) {
         adminToken = savedToken;
@@ -66,9 +103,9 @@ async function doAdminLogin() {
         adminToken = data.token;
         localStorage.setItem("adminToken", adminToken);
         showAdminApp();
-        Swal.fire("Bem-vindo!", `Painel Admin - ${data.user.name}`, "success");
+        Swal.fire({ title: "Bem-vindo!", text: `Painel Admin - ${data.user.name}`, icon: "success", confirmButtonColor: "#00d4ff" });
     } catch (err) {
-        Swal.fire("Erro", err.message, "error");
+        Swal.fire({ title: "Erro", text: err.message, icon: "error", confirmButtonColor: "#00d4ff" });
     }
 }
 
@@ -385,7 +422,7 @@ async function deleteProduct(id) {
         text: "Esta ação não pode ser desfeita!",
         icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: "#ff4d4d",
+        confirmButtonColor: "#00d4ff",
         cancelButtonColor: "#6B7280",
         confirmButtonText: "Sim, excluir!",
         cancelButtonText: "Cancelar"
@@ -684,16 +721,23 @@ async function loadLayoutPage() {
                 <div class="layout-section">
                     <h4><i class="fas fa-sliders-h"></i> Customização</h4>
                     <div class="admin-form" style="max-width:500px;">
+                        <label>Nível de Performance (Glow)</label>
+                        <select id="performanceLevel" onchange="updatePreview()" style="margin-bottom:1.5rem">
+                            <option value="low" ${settings.performanceLevel === 'low' ? 'selected' : ''}>Baixo (Eco)</option>
+                            <option value="medium" ${!settings.performanceLevel || settings.performanceLevel === 'medium' ? 'selected' : ''}>Padrão (Balanced)</option>
+                            <option value="overclock" ${settings.performanceLevel === 'overclock' ? 'selected' : ''}>Overclock (Ultra)</option>
+                        </select>
+
                         <label>Cor Primária</label>
                         <div class="color-input-wrapper">
-                            <input type="color" id="primaryColor" value="${settings.primaryColor || '#c9a96e'}" onchange="updatePreview()">
-                            <span id="primaryColorHex">${settings.primaryColor || '#c9a96e'}</span>
+                            <input type="color" id="primaryColor" value="${settings.primaryColor || '#00d4ff'}" onchange="updatePreview()">
+                            <span id="primaryColorHex">${settings.primaryColor || '#00d4ff'}</span>
                         </div>
                         
                         <label>Cor de Destaque</label>
                         <div class="color-input-wrapper">
-                            <input type="color" id="accentColor" value="${settings.accentColor || '#7c6fae'}" onchange="updatePreview()">
-                            <span id="accentColorHex">${settings.accentColor || '#7c6fae'}</span>
+                            <input type="color" id="accentColor" value="${settings.accentColor || '#bc13fe'}" onchange="updatePreview()">
+                            <span id="accentColorHex">${settings.accentColor || '#bc13fe'}</span>
                         </div>
 
                         <label>Título do Site</label>
@@ -748,6 +792,10 @@ function updatePreview() {
     document.getElementById('primaryColorHex').innerText = primary;
     document.getElementById('accentColorHex').innerText = accent;
     
+    const perf = document.getElementById('performanceLevel').value;
+    document.body.classList.remove('perf-low', 'perf-medium', 'perf-overclock');
+    document.body.classList.add(`perf-${perf}`);
+
     const preview = document.getElementById('layoutPreview');
     preview.style.setProperty('--primary', primary);
     preview.style.setProperty('--accent', accent);
@@ -757,6 +805,7 @@ async function saveLayoutSettings() {
     const settings = {
         primaryColor: document.getElementById('primaryColor').value,
         accentColor: document.getElementById('accentColor').value,
+        performanceLevel: document.getElementById('performanceLevel').value,
         siteTitle: document.getElementById('siteTitle').value || 'IHC Store',
         welcomeText: document.getElementById('welcomeText').value || 'Sua melhor experiência em hardware',
         logoUrl: document.getElementById('logoUrl').value
@@ -782,6 +831,10 @@ function applySettingsToFrontend(settings) {
     const root = document.documentElement;
     if (settings.primaryColor) root.style.setProperty('--primary', settings.primaryColor);
     if (settings.accentColor) root.style.setProperty('--accent', settings.accentColor);
+    if (settings.performanceLevel) {
+        document.body.classList.remove('perf-low', 'perf-medium', 'perf-overclock');
+        document.body.classList.add(`perf-${settings.performanceLevel}`);
+    }
 }
 
 function resetLayoutSettings() {

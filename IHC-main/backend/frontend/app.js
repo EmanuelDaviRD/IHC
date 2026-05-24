@@ -141,12 +141,19 @@ function renderCatalog() {
         
         return `<div class="product-card" data-id="${pid}">${getBadge(p)}
             <div class="product-img-wrapper">
+                <div style="position:absolute; top:10px; right:10px; font-family:'JetBrains Mono'; font-size:9px; color:var(--primary); z-index:5; background:rgba(0,0,0,0.7); padding:2px 5px; border:1px solid var(--primary-glow);">
+                    [STATUS: READY]
+                </div>
                 <img src="${p.image}" class="product-img" alt="${p.name}" loading="lazy">
-                <div style="position:absolute; bottom:5px; right:5px; font-family:'JetBrains Mono'; font-size:10px; color:var(--primary); opacity:0.6;">
-                    UID: ${pid.substring(0,8)}
+                <div style="position:absolute; bottom:8px; left:10px; font-family:'JetBrains Mono'; font-size:9px; color:var(--primary); opacity:0.8; z-index:5;">
+                    > SCAN_ID: ${pid.substring(0,12)}
                 </div>
             </div>
-            <div class="product-info"><div class="product-category">${p.category}</div>
+            <div class="product-info">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                <div class="product-category" style="font-family:'JetBrains Mono'; font-size:10px;">// ${p.category}</div>
+                <div style="width:10px; height:10px; border:1px solid var(--primary); border-radius:50%; background:var(--primary); box-shadow:0 0 5px var(--primary);"></div>
+            </div>
             <div class="product-title">${p.name}</div>
             ${stockWarning}
             <div class="product-price">${formatMoney(p.price)}</div>
@@ -399,7 +406,7 @@ function renderCartModal() {
     const checkoutBtn = document.querySelector('[onclick*="checkoutWhatsApp"]');
     if (checkoutBtn) {
         checkoutBtn.style.display = 'flex';
-        checkoutBtn.className = 'btn-checkout-premium';
+        checkoutBtn.className = 'btn-checkout-premium btn-whatsapp-pulse';
         checkoutBtn.innerHTML = `<i class="fab fa-whatsapp"></i> FINALIZAR PEDIDO VIA WHATSAPP • ${formatMoney(fin)}`;
     }
 }
@@ -492,9 +499,9 @@ async function login(email, password) {
         AppState.token = data.token; AppState.currentUser = data.user;
         localStorage.setItem("authToken", data.token);
         updateUIForUser();
-        Swal.fire({ title: "Bem-vindo!", text: `Olá, ${data.user.name}!`, icon: "success", confirmButtonColor: "#C9A96E" });
+        Swal.fire({ title: "Bem-vindo!", text: `Olá, ${data.user.name}!`, icon: "success", confirmButtonColor: "#00d4ff" });
         renderCatalog(); closeModal("authModal");
-    } catch (err) { Swal.fire({ title: "Erro", text: err.message, icon: "error", confirmButtonColor: "#C9A96E" }); }
+    } catch (err) { Swal.fire({ title: "Erro", text: err.message, icon: "error", confirmButtonColor: "#00d4ff" }); }
 }
 
 async function register(name, email, password) {
@@ -505,9 +512,9 @@ async function register(name, email, password) {
         AppState.token = data.token; AppState.currentUser = data.user;
         localStorage.setItem("authToken", data.token);
         updateUIForUser();
-        Swal.fire({ title: "Sucesso!", text: "Cadastro realizado!", icon: "success", confirmButtonColor: "#C9A96E" });
+        Swal.fire({ title: "Sucesso!", text: "Cadastro realizado!", icon: "success", confirmButtonColor: "#00d4ff" });
         renderCatalog(); closeModal("authModal");
-    } catch (err) { Swal.fire({ title: "Erro", text: err.message, icon: "error", confirmButtonColor: "#C9A96E" }); }
+    } catch (err) { Swal.fire({ title: "Erro", text: err.message, icon: "error", confirmButtonColor: "#00d4ff" }); }
 }
 
 function logout() {
@@ -523,7 +530,7 @@ function logout() {
     modal.innerHTML = `
         <div class="modal-content luxury-modal" style="text-align:center; padding:3rem">
             <div style="font-size:4rem; color:var(--bronze); margin-bottom:1rem"><i class="fas fa-door-open"></i></div>
-            <h2 style="font-family:'Playfair Display'; color:var(--bronze); font-size:2.5rem; letter-spacing:3px">ATÉ LOGO!</h2>
+            <h2 style="font-family:'Orbitron'; color:var(--bronze); font-size:2.5rem; letter-spacing:3px">ATÉ LOGO!</h2>
             <p style="color:var(--text-light); margin-bottom:2.5rem">Sua sessão foi encerrada, ${userName}.</p>
             <div style="display:flex; flex-direction:column; gap:1rem">
                 <button class="btn-primary btn-metallic" onclick="location.reload()">VOLTAR À LOJA</button>
@@ -672,10 +679,10 @@ function bindAllEvents() {
             AppState.appliedCoupon = cupom;
             renderCartModal();
             applyCoupon.classList.add("pulse-gold");
-            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#C9A96E" });
+            Swal.fire({ title: "Cupom aplicado!", text: cupom.code, icon: "success", timer: 1500, showConfirmButton: false, confirmButtonColor: "#00d4ff" });
         } else {
             applyCoupon.classList.remove("pulse-gold");
-            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#C9A96E" });
+            Swal.fire({ title: "Cupom inválido", icon: "error", confirmButtonColor: "#00d4ff" });
         }
     };
 }
@@ -736,12 +743,30 @@ async function showOrderHistory() {
                 </div>`).join('');
         }
         openModal("historyModal");
-    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#C9A96E" }); }
+    } catch { Swal.fire({ title: "Erro", text: "Não foi possível carregar histórico", icon: "error", confirmButtonColor: "#00d4ff" }); }
+}
+
+async function loadSiteSettings() {
+    try {
+        const res = await fetch(`${API_URL}/settings`);
+        if (res.ok) {
+            const settings = await res.json();
+            const root = document.documentElement;
+            if (settings.primaryColor) root.style.setProperty('--primary', settings.primaryColor);
+            if (settings.accentColor) root.style.setProperty('--accent', settings.accentColor);
+            if (settings.performanceLevel) {
+                document.body.classList.remove('perf-low', 'perf-medium', 'perf-overclock');
+                document.body.classList.add(`perf-${settings.performanceLevel}`);
+            }
+            if (settings.siteTitle) document.title = settings.siteTitle;
+        }
+    } catch (e) {}
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
     document.body.classList.add("dark");
     
+    await loadSiteSettings();
     bindAllEvents();
     loadLocalCartFavs();
     checkAuthToken();
