@@ -1,24 +1,25 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-    --primary: #C9A96E;
-    --primary-light: #E8D5A3;
-    --primary-dark: #A0824D;
-    --secondary: #1A1A2E;
-    --secondary-light: #2D2D44;
-    --accent: #FF6B6B;
-    --success: #4ECDC4;
-    --gold: #D4AF37;
-    --gold-light: #F4E4BC;
+    --primary: #00d4ff;
+    --primary-light: #70e1ff;
+    --primary-dark: #008eb4;
+    --secondary: #050508;
+    --secondary-light: #10101a;
+    --accent: #bc13fe;
+    --success: #00ffaa;
+    --gold: #00d4ff;
+    --gold-light: #b0f2ff;
 --dark: #000000;
-    --dark-card: #0D0D15;
-    --dark-hover: #161625;
+    --dark-card: #0a0a15;
+    --dark-hover: #121225;
     --charcoal: #1A1A1A;
-    --bronze: #C9A96E;
-    --bronze-dark: #A0824D;
-    --bronze-metallic: linear-gradient(145deg, #A0824D, #C9A96E, #A0824D);
-    --gold-glow: 0 0 10px rgba(201, 169, 110, 0.2);
-    --bronze-glow: rgba(201, 169, 110, 0.4);
+    --bronze: #00d4ff;
+    --bronze-dark: #008eb4;
+    --bronze-metallic: linear-gradient(145deg, #008eb4, #00d4ff, #008eb4);
+    --gold-glow: 0 0 15px rgba(0, 212, 255, 0.4);
+    --primary-glow: rgba(0, 212, 255, 0.5);
+    --bronze-glow: rgba(0, 212, 255, 0.4);
     --sea-green: #20403B;
 --light-bg: #000000;
 --card-bg: #111111;
@@ -29,8 +30,8 @@
     --radius: 16px;
     --radius-sm: 8px;
     --shadow: 0 4px 20px rgba(0,0,0,0.08);
-    --shadow-lg: 0 12px 40px rgba(0,0,0,0.15);
-    --shadow-gold: 0 4px 20px rgba(201,169,110,0.3);
+    --shadow-lg: 0 12px 40px rgba(0, 212, 255, 0.1);
+    --shadow-gold: 0 4px 20px rgba(0, 212, 255, 0.2);
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -51,7 +52,7 @@
     --border: #1A1A2E;
     --shadow: 0 4px 20px rgba(0,0,0,0.3);
     --shadow-lg: 0 12px 40px rgba(0,0,0,0.4);
-    --shadow-bronze: 0 0 25px rgba(201, 169, 110, 0.15);
+    --shadow-bronze: 0 0 25px rgba(0, 212, 255, 0.1);
 }
 
 .modal-content.cart-modal {
@@ -88,7 +89,7 @@
 .gold-crown {
     color: var(--bronze);
     font-size: 2.2rem;
-    filter: drop-shadow(0 0 8px rgba(201, 169, 110, 0.4));
+    filter: drop-shadow(0 0 10px var(--primary-glow));
     margin-bottom: 10px;
 }
 
@@ -102,7 +103,7 @@
 
 .luxury-field {
     background: #1A1D20 !important;
-    border: 1px solid rgba(201, 169, 110, 0.2) !important;
+    border: 1px solid rgba(0, 212, 255, 0.2) !important;
     color: white !important;
     padding: 1.2rem 1.5rem !important;
     border-radius: 8px !important;
@@ -119,28 +120,28 @@
 }
 
 .luxury-field::placeholder {
-    color: rgba(201, 169, 110, 0.4);
+    color: rgba(0, 212, 255, 0.3);
     text-transform: uppercase;
     font-size: 0.7rem;
     letter-spacing: 1px;
 }
 
 .luxury-modal {
-    background-image: radial-gradient(circle at 2px 2px, rgba(201, 169, 110, 0.05) 1px, transparent 0);
+    background-image: radial-gradient(circle at 2px 2px, rgba(0, 212, 255, 0.05) 1px, transparent 0);
     background-size: 32px 32px;
     background-color: #000000 !important;
-    border: 1px solid rgba(201, 169, 110, 0.3) !important;
-    box-shadow: var(--shadow-bronze), 0 20px 50px rgba(0,0,0,0.8) !important;
+    border: 1px solid rgba(0, 212, 255, 0.3) !important;
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.1), 0 20px 50px rgba(0,0,0,0.8) !important;
 }
 
 .btn-metallic {
     background: var(--bronze-metallic) !important;
-    color: #0D0D15 !important;
+    color: #000 !important;
     text-transform: uppercase;
     letter-spacing: 2px;
-    font-weight: 800 !important;
+    font-weight: 900 !important;
     border: none;
-    box-shadow: 0 4px 15px rgba(201, 169, 110, 0.3), inset 0 1px 1px rgba(255,255,255,0.4) !important;
+    box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3), inset 0 1px 1px rgba(255,255,255,0.4) !important;
     position: relative;
     overflow: hidden;
 }

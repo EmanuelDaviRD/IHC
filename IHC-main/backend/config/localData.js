@@ -148,8 +148,8 @@ function seedIfEmpty() {
   const settings = readJSON(FILES.settings, null);
   if (!settings || typeof settings !== 'object' || !Object.keys(settings).length) {
     writeJSON(FILES.settings, {
-      primaryColor: '#c9a96e',
-      accentColor: '#3b82f6',
+      primaryColor: '#00d4ff',
+      accentColor: '#bc13fe',
       siteTitle: 'IHC Store',
       welcomeText: 'Sua melhor experiência em hardware',
       logoUrl: ''

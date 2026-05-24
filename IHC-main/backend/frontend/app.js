@@ -216,7 +216,7 @@ window.addToCart = function(id) {
             position: 'top',
             background: '#1A1D20', 
             color: '#FFF', 
-            confirmButtonColor: '#C9A96E'
+            confirmButtonColor: '#00d4ff'
         });
         return;
     }
@@ -231,7 +231,7 @@ window.addToCart = function(id) {
                 position: 'top',
                 background: '#1A1D20', 
                 color: '#FFF', 
-                confirmButtonColor: '#C9A96E'
+                confirmButtonColor: '#00d4ff'
             });
             return;
         }
@@ -249,7 +249,7 @@ window.addToCart = function(id) {
         showConfirmButton: false, 
         background: '#1A1D20',
         color: '#FFF',
-        iconColor: '#C9A96E'
+        iconColor: '#00d4ff'
     });
 };
 

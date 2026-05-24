@@ -757,8 +757,8 @@ async function saveLayoutSettings() {
     const settings = {
         primaryColor: document.getElementById('primaryColor').value,
         accentColor: document.getElementById('accentColor').value,
-        siteTitle: document.getElementById('siteTitle').value,
-        welcomeText: document.getElementById('welcomeText').value,
+        siteTitle: document.getElementById('siteTitle').value || 'IHC Store',
+        welcomeText: document.getElementById('welcomeText').value || 'Sua melhor experiência em hardware',
         logoUrl: document.getElementById('logoUrl').value
     };
     
