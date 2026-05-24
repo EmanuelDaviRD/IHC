@@ -214,7 +214,8 @@ window.addToCart = function(id) {
             text: "Este produto não possui mais unidades em estoque.",
             icon: "warning", 
             position: 'top',
-            background: '#1A1D20', 
+            background: 'rgba(10, 10, 20, 0.95)', 
+            backdropFilter: 'blur(10px)',
             color: '#FFF', 
             confirmButtonColor: '#00d4ff'
         });
@@ -405,12 +406,12 @@ window.removeFromCart = id => {
 
 window.checkoutWhatsApp = async () => {
     if (!AppState.cart.length) {
-        Swal.fire({ title: "Carrinho vazio", icon: "warning", confirmButtonColor: "#C9A96E" });
+        Swal.fire({ title: "Carrinho vazio", icon: "warning", confirmButtonColor: "#00d4ff" });
         return;
     }
 
     if (!AppState.currentUser) {
-        Swal.fire({ title: "Atenção", text: "Você precisa estar logado para finalizar o pedido.", icon: "info", position: 'top', confirmButtonColor: "#C9A96E" });
+        Swal.fire({ title: "Atenção", text: "Você precisa estar logado para finalizar o pedido.", icon: "info", position: 'top', confirmButtonColor: "#00d4ff" });
         openModal("authModal");
         return;
     }
@@ -438,7 +439,7 @@ window.checkoutWhatsApp = async () => {
         
         Swal.close();
     } catch (err) {
-        Swal.fire({ title: "Erro no Checkout", text: err.message, icon: "error", position: 'top', confirmButtonColor: "#C9A96E" });
+        Swal.fire({ title: "Erro no Checkout", text: err.message, icon: "error", position: 'top', confirmButtonColor: "#00d4ff" });
         return;
     }
 

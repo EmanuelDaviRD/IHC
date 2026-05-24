@@ -209,8 +209,8 @@ function renderSalesChart() {
             datasets: [{
                 label: 'Vendas',
                 data: sorted.map(p => p.sales || 0),
-                backgroundColor: 'rgba(201, 169, 110, 0.7)',
-                borderColor: '#c9a96e',
+                backgroundColor: 'rgba(0, 212, 255, 0.5)',
+                borderColor: '#00d4ff',
                 borderWidth: 2,
                 borderRadius: 8
             }]
