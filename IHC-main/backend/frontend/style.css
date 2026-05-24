@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
 
 :root {
     --primary: #00d4ff;
@@ -41,9 +41,9 @@ body::before {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
     background: 
-        linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
-    background-size: 50px 50px;
+        linear-gradient(rgba(0, 212, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 212, 255, 0.05) 1px, transparent 1px);
+    background-size: 30px 30px;
     z-index: -1;
     pointer-events: none;
 }
@@ -56,7 +56,7 @@ body::after {
     background-size: 100% 4px, 3px 100%;
     z-index: 10000;
     pointer-events: none;
-    opacity: 0.15;
+    opacity: 0.2;
 }
 
 .dark {
@@ -79,24 +79,31 @@ body::after {
     --shadow-bronze: 0 0 25px rgba(0, 212, 255, 0.15);
 }
 
-@keyframes futuristicGlitch {
-    0% { transform: translate(0); text-shadow: none; }
-    20% { transform: translate(-2px, 2px); text-shadow: 2px 0 var(--accent), -2px 0 var(--primary); }
-    40% { transform: translate(-2px, -2px); text-shadow: -2px 0 var(--accent), 2px 0 var(--primary); }
-    60% { transform: translate(2px, 2px); text-shadow: 2px 0 var(--accent), -2px 0 var(--primary); }
-    80% { transform: translate(2px, -2px); text-shadow: -2px 0 var(--accent), 2px 0 var(--primary); }
-    100% { transform: translate(0); text-shadow: none; }
+@keyframes neonPulse {
+    0%, 100% { opacity: 1; filter: drop-shadow(0 0 5px var(--primary)); }
+    50% { opacity: 0.8; filter: drop-shadow(0 0 15px var(--primary)); }
+}
+
+@keyframes scanner {
+    0% { top: -100%; }
+    100% { top: 100%; }
+}
+
+h1, h2, .luxury-brand-name {
+    font-family: 'Orbitron', sans-serif !important;
+    text-transform: uppercase;
+    letter-spacing: 4px !important;
 }
 
 h1, h2 {
-    letter-spacing: 2px;
     text-transform: uppercase;
     transition: var(--transition);
 }
 
-h1:hover, h2:hover {
-    animation: futuristicGlitch 0.3s ease infinite;
-    color: var(--primary-light);
+h1 {
+    background: linear-gradient(to bottom, #fff 0%, var(--primary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .modal-content.cart-modal {
@@ -172,12 +179,13 @@ h1:hover, h2:hover {
 }
 
 .luxury-modal {
-    background-image: radial-gradient(circle at 2px 2px, rgba(0, 242, 255, 0.05) 1px, transparent 0);
+    background-image: radial-gradient(circle at 2px 2px, rgba(0, 212, 255, 0.05) 1px, transparent 0);
     background-size: 32px 32px;
-    background-color: rgba(0, 0, 0, 0.9) !important;
+    background-color: rgba(2, 2, 5, 0.95) !important;
     backdrop-filter: blur(15px);
-    border: 1px solid rgba(0, 212, 255, 0.4) !important;
-    box-shadow: 0 0 50px rgba(0, 212, 255, 0.2) !important;
+    border: 1px solid var(--primary) !important;
+    box-shadow: 0 0 50px rgba(0, 212, 255, 0.2), inset 0 0 20px rgba(0, 212, 255, 0.1) !important;
+    clip-path: polygon(0 0, 95% 0, 100% 5%, 100% 100%, 5% 100%, 0 95%);
 }
 
 .btn-metallic {
@@ -653,14 +661,13 @@ select:focus, .filter-group input:focus {
 }
 
 .product-card {
-    background: rgba(17, 17, 17, 0.7);
-    backdrop-filter: blur(10px);
-    border-radius: var(--radius);
-    overflow: hidden;
-    box-shadow: var(--shadow);
+    background: rgba(10, 10, 20, 0.6);
+    backdrop-filter: blur(12px);
+    border-radius: 0;
+    clip-path: polygon(0 0, 100% 0, 100% 90%, 90% 100%, 0 100%);
+    border: 1px solid rgba(0, 212, 255, 0.2);
     cursor: pointer;
     transition: var(--transition);
-    border: 1px solid rgba(0, 242, 255, 0.1);
     position: relative;
     display: flex;
     flex-direction: column;
@@ -689,13 +696,29 @@ select:focus, .filter-group input:focus {
 }
 
 .product-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 0 30px rgba(0, 242, 255, 0.3);
     border-color: var(--primary);
+    box-shadow: 0 0 25px rgba(0, 212, 255, 0.3);
+    background: rgba(15, 15, 30, 0.8);
 }
 
-.product-card:hover::after {
-    left: 150%;
+.product-img-wrapper::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 2px;
+    background: var(--primary);
+    box-shadow: 0 0 15px var(--primary);
+    animation: scanner 3s linear infinite;
+    opacity: 0;
+    transition: 0.3s;
+}
+
+.product-card:hover .product-img-wrapper::after {
+    opacity: 0.7;
+}
+
+.product-title {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
 }
 
 .product-badge {

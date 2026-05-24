@@ -142,6 +142,9 @@ function renderCatalog() {
         return `<div class="product-card" data-id="${pid}">${getBadge(p)}
             <div class="product-img-wrapper">
                 <img src="${p.image}" class="product-img" alt="${p.name}" loading="lazy">
+                <div style="position:absolute; bottom:5px; right:5px; font-family:'JetBrains Mono'; font-size:10px; color:var(--primary); opacity:0.6;">
+                    UID: ${pid.substring(0,8)}
+                </div>
             </div>
             <div class="product-info"><div class="product-category">${p.category}</div>
             <div class="product-title">${p.name}</div>
@@ -289,9 +292,11 @@ function showProductModal(id) {
         .slice(0, 3);
 
     d.innerHTML = `
-        <h2>${p.name}</h2>
+        <h2 style="font-family:'Orbitron'">${p.name}</h2>
         <div class="product-category">${p.category}</div>
-        <img src="${p.image}" style="width:100%;border-radius:1rem;margin:1rem 0" alt="${p.name}">
+        <div style="position:relative; overflow:hidden; border:1px solid var(--primary);">
+            <img src="${p.image}" style="width:100%; display:block;" alt="${p.name}">
+        </div>
         ${stockWarning}
 
         <div class="product-info-menu">
