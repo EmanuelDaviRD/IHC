@@ -292,8 +292,10 @@ h1, h2, h3, h4, h5, h6 {
     border-bottom: 1px solid rgba(201,169,110,0.2);
 }
 
+
 .bottom-nav {
-    display: none; /* Escondido por padrão no desktop */
+    display: none;
+
     position: fixed;
     bottom: 0;
     left: 0;
@@ -473,7 +475,7 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: var(--shadow-gold);
 }
 
-/* Category nav restored - inline version removed */
+
 
 .category-nav {
     display: flex;
@@ -520,7 +522,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .filters-bar {
-    display: none; /* Removido do grid principal para o modal */
+
 }
 
 .category-filter-grid {
@@ -1139,7 +1141,7 @@ footer {
     margin: 1rem 0;
 }
 
-/* Seção de Recomendados (Você também pode gostar) */
+
 .related-section {
     margin-top: 2.5rem;
     padding-top: 1.5rem;
@@ -1186,7 +1188,7 @@ footer {
     margin-bottom: 8px;
 }
 
-/* Menu expansível de detalhes */
+
 .product-info-menu {
     margin: 1.5rem 0;
     border-top: 1px solid var(--border);
@@ -1253,7 +1255,7 @@ footer {
     background: var(--primary-dark);
 }
 
-/* Animação de esmaecimento para as abas */
+
 .fade-in {
     animation: fadeInTab 0.4s ease forwards;
 }
@@ -1264,7 +1266,7 @@ footer {
 }
 
 @media (max-width: 768px) {
-    /* Header Responsivo: 2 linhas dinâmicas */
+
     .header-container {
         flex-wrap: wrap;
         padding: 0.8rem 1.5rem;
@@ -1286,15 +1288,17 @@ footer {
 
     .header-actions > button.icon-btn, 
     .user-menu > button.icon-btn {
-        display: none; /* Esconde os ícones físicos do topo */
+display: none;
     }
 
     .bottom-nav {
-        display: flex; /* Mostra a barra inferior no mobile */
+        display: flex;
+
     }
 
     body {
-        padding-bottom: 80px; /* Evita que a barra cubra o conteúdo */
+        padding-bottom: 80px;
+
     }
 
     .header-center {
@@ -1316,7 +1320,7 @@ footer {
         font-size: 0.85rem;
     }
 
-    /* Padronização de Modais Mobile (Centralizados e Fixos) */
+
     .modal {
         padding: 0;
         align-items: center !important;
@@ -1339,7 +1343,8 @@ footer {
         padding: 1.5rem !important;
         border: 1px solid rgba(201, 169, 110, 0.3) !important;
         display: block !important;
-        overflow: hidden !important; /* Trava o container externo */
+        overflow: hidden !important;
+
         animation: modalFadeIn 0.3s ease forwards !important;
     }
 
@@ -1370,7 +1375,7 @@ footer {
         to { opacity: 1; transform: translate(-50%, -50%); }
     }
 
-    /* Habilitar Rolagem Interna nos Contêineres de Conteúdo */
+
     #productDetail, .luxury-modal {
         overflow-y: auto !important;
         max-height: calc(90vh - 120px) !important;
@@ -1393,7 +1398,7 @@ footer {
         z-index: 10;
     }
 
-    /* Ajuste para Imagem do Produto no Modal */
+
     .product-modal img {
         max-width: 100% !important;
         height: auto !important;
@@ -1401,7 +1406,7 @@ footer {
         margin: 1rem auto !important;
     }
 
-    /* Botão de Fechar Acessível e Fixo */
+
     .close {
         position: sticky !important;
         top: 0 !important;
@@ -1419,10 +1424,11 @@ footer {
         border-radius: 50%;
     }
 
-    /* Menu da Conta Mobile (Abre para cima) */
+
     .dropdown-content {
         position: fixed !important;
-        bottom: 80px !important; /* Acima da Bottom Bar */
+        bottom: 80px !important;
+
         top: auto !important;
         left: 50% !important;
         transform: translateX(-50%) translateY(10px) !important;
@@ -1439,7 +1445,7 @@ footer {
         transform: translateX(-50%) translateY(0) !important;
     }
 
-    /* Grid de Produtos: 2 por linha para aproveitar melhor o espaço */
+
     .products-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 0.75rem;
@@ -1467,7 +1473,7 @@ footer {
     .icon-btn { width: 38px; height: 38px; }
 }
 
-/* Efeito de Pulso Dourado para Cupom Válido */
+
 @keyframes pulse-gold {
     0% { box-shadow: 0 0 0 0 rgba(201, 169, 110, 0.7); }
     70% { box-shadow: 0 0 0 10px rgba(201, 169, 110, 0); }
@@ -1479,7 +1485,7 @@ footer {
     border-color: var(--primary) !important;
 }
 
-/* === ADMIN PANEL DARK THEME === */
+
 #adminApp {
     background-color: var(--dark) !important;
     color: var(--text);
@@ -1555,7 +1561,7 @@ footer {
     background: rgba(201, 169, 110, 0.03);
 }
 
-/* Modais do Admin */
+
 .admin-modal {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
@@ -1577,7 +1583,7 @@ footer {
     width: 90%;
 }
 
-/* Garante que os alertas do SweetAlert2 fiquem sempre acima dos modais */
+
 .swal2-container {
     z-index: 20000 !important;
 }

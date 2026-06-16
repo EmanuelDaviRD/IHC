@@ -295,6 +295,11 @@ app.get(/.*/, (req, res) => {
   res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// Vercel Serverless Functions: não pode usar app.listen()
+// Exporta a aplicação como módulo
+module.exports = app;
+
+// Para desenvolvimento local, descomentar abaixo:
+// app.listen(PORT, () => {
+//   console.log(`Server running on port ${PORT}`);
+// });

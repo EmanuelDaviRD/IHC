@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "buildCommand": "cd backend && npm install",
+  "outputDirectory": "backend",
+  "env": {
+    "PORT": "3000"
+  },
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 30,
+      "memory": 1024
+    }
+  },
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "api/index.js"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/static/(.*)",
+      "destination": "/backend/frontend/$1"
+    }
+  ]
+}
