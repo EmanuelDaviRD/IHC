@@ -3,7 +3,7 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const axios = require('axios');
 require('dotenv').config();
@@ -18,7 +18,7 @@ const {
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const SECRET = process.env.JWT_SECRET || 'LOCAL_JWT_SECRET_CHANGE_ME_IN_PRODUCTION';
+const SECRET = process.env.JWT_SECRET;
 
 app.use(cors());
 app.use(express.json());
