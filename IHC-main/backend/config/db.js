@@ -51,6 +51,7 @@ const Order = mongoose.model('Order', orderSchema);
 const Setting = mongoose.model('Setting', settingSchema);
 
 async function initializeDatabase() {
+  if (mongoose.connection.readyState >= 1) return;
   try {
     await mongoose.connect(MONGO_URI);
     console.log('✅ MongoDB Connected');
@@ -76,14 +77,15 @@ async function seedInitialData() {
   }
 
   // Verifica se o admin já existe pelo e-mail para evitar duplicatas
-  const uCount = await User.countDocuments({ role: 'admin' });
-  if (uCount === 0) {
+  const adminEmail = 'admin@ihcstore.com';
+  const adminExists = await User.findOne({ email: adminEmail });
+  if (!adminExists) {
     console.log('👤 Criando administrador padrão...');
     const hashedPwd = bcrypt.hashSync('admin123', 10);
     await User.create({
       _id: 'u-admin',
-      name: 'Admin',
-      email: 'admin@ihcstore.com',
+      name: 'Administrador',
+      email: adminEmail,
       password: hashedPwd,
       role: 'admin'
     });

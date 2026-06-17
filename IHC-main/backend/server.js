@@ -356,25 +356,10 @@ app.use(async (req, res, next) => {
 
 const start = async () => {
   try {
-    const adminEmail = 'admin@ihcstore.com';
-    const admin = await findUserByEmail(adminEmail);
-    
-    if (!admin) {
-      console.log('⚙️ Criando usuário administrador padrão...');
-      const hashed = await bcrypt.hash('admin123', 10);
-      await createUser({
-        id: 'u-admin',
-        name: 'Administrador',
-        email: adminEmail,
-        password: hashed,
-        role: 'admin'
-      });
-    }
-
+    // Em desenvolvimento local, iniciamos o servidor manualmente
     if (process.env.NODE_ENV !== 'production') {
       app.listen(PORT, () => {
-        console.log(`\n🚀 SITE NO AR: http://localhost:${PORT}`);
-        console.log(`🔐 ADMIN: ${adminEmail} / admin123\n`);
+        console.log(`\n🚀 SITE NO AR: http://localhost:${PORT}\n`);
       });
     }
   } catch (err) {
