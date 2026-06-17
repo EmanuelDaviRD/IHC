@@ -10,7 +10,7 @@ require('dotenv').config();
 
 const { uploadToCloudinary } = require('./config/cloudinary');
 const {
-  db, initializeDatabase, listProducts, getProductById, upsertProduct, deleteProduct,
+  initializeDatabase, listProducts, getProductById, upsertProduct, deleteProduct,
   listUsers, findUserByEmail, createUser, updateAdminPassword, verifyAdminPassword,
   listOrders, listOrdersByCustomer, getOrderById, createOrder, deleteOrdersBulk,
   updateOrderStatus, getSettings, saveSettings
@@ -23,13 +23,20 @@ const SECRET = process.env.JWT_SECRET || 'LOCAL_JWT_SECRET_CHANGE_ME_IN_PRODUCTI
 app.use(cors());
 app.use(express.json());
 
+// 🛠️ CORREÇÃO AQUI: Só tenta criar a pasta uploads localmente. A Vercel ignora e não quebra.
 const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+if (!process.env.VERCEL && !fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, path.join(__dirname, 'uploads')),
+  destination: (req, file, cb) => {
+    // Na Vercel, usamos /tmp para armazenamento temporário antes de enviar ao Cloudinary
+    const dest = process.env.VERCEL ? '/tmp' : path.join(__dirname, 'uploads');
+    cb(null, dest);
+  },
   filename: (req, file, cb) => {
     const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
     cb(null, unique + path.extname(file.originalname));
@@ -70,7 +77,7 @@ app.get('/produtos', async (req, res) => {
 app.post('/produtos', authenticate, isAdmin, async (req, res) => {
   try {
     const { name, price, category, stock, image, description, badge } = req.body;
-    if (!name || price === undefined) return res.status(400).json({ error: 'Nome e preço são obrigatórios' });
+    if (!name || price === undefined || !category) return res.status(400).json({ error: 'Nome, preço e categoria são obrigatórios' });
 
     const id = 'p-' + Date.now();
     await upsertProduct(id, {
@@ -329,18 +336,26 @@ app.post('/settings', authenticate, isAdmin, async (req, res) => {
 app.use(express.static(path.join(__dirname, 'frontend'), { fallthrough: true }));
 app.use('/uploads', (req, res) => res.status(404).json({ error: 'Arquivo não encontrado' }));
 
-app.use(['/produtos', '/pedidos', '/usuarios', '/settings', '/login', '/register'], (req, res) => {
-  res.status(404).json({ error: 'Rota de API não encontrada' });
+// 404 para rotas não encontradas (API ou frontend)
+app.use((req, res) => {
+  if (req.path.startsWith('/produtos') || req.path.startsWith('/pedidos') || req.path.startsWith('/usuarios') || req.path.startsWith('/settings') || req.path.startsWith('/login') || req.path.startsWith('/register')) {
+    return res.status(404).json({ error: 'Rota de API não encontrada' });
+  }
+  res.status(404).sendFile(path.join(__dirname, 'frontend', 'index.html'));
 });
 
-app.get(/.*/, (req, res) => {
-  res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
+// Middleware para garantir conexão com DB na Vercel
+let isConnected = false;
+app.use(async (req, res, next) => {
+  if (!isConnected) {
+    await initializeDatabase();
+    isConnected = true;
+  }
+  next();
 });
 
 const start = async () => {
   try {
-    await initializeDatabase();
-    
     const adminEmail = 'admin@ihcstore.com';
     const admin = await findUserByEmail(adminEmail);
     
@@ -356,13 +371,17 @@ const start = async () => {
       });
     }
 
-    app.listen(PORT, () => {
-      console.log(`\n🚀 SITE NO AR: http://localhost:${PORT}`);
-      console.log(`🔐 ADMIN: ${adminEmail} / admin123\n`);
-    });
+    if (process.env.NODE_ENV !== 'production') {
+      app.listen(PORT, () => {
+        console.log(`\n🚀 SITE NO AR: http://localhost:${PORT}`);
+        console.log(`🔐 ADMIN: ${adminEmail} / admin123\n`);
+      });
+    }
   } catch (err) {
     console.error('❌ Erro crítico ao iniciar o site:', err);
   }
 };
 
 start();
+
+module.exports = app;

@@ -10,6 +10,7 @@ let salesChart = null;
 function playTerminalBeep() {
     try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'square';
@@ -331,27 +332,36 @@ function openProductModal(product = null) {
                             <option value="Outros" ${product?.category === 'Outros' ? 'selected' : ''}>Outros</option>
                         </select>
                     </div>
+                    </div>
                 <div class="form-row">
                     <div><label>Preço (R$)</label><input type="number" id="prodPrice" value="${product?.price || ''}" step="0.01" placeholder="0.00"></div>
                     <div><label>Estoque</label><input type="number" id="prodStock" value="${product?.stock || ''}" placeholder="0"></div>
+                    <div><label>Selo (Badge)</label>
+                        <select id="prodBadge">
+                            <option value="" ${!product?.badge ? 'selected' : ''}>Nenhum</option>
+                            <option value="new" ${product?.badge === 'new' ? 'selected' : ''}>Lançamento (New)</option>
+                            <option value="bestseller" ${product?.badge === 'bestseller' ? 'selected' : ''}>Mais Vendido</option>
+                            <option value="sale" ${product?.badge === 'sale' ? 'selected' : ''}>Promoção</option>
+                        </select>
+                    </div>
                 </div>
 
                 <label>Descrição</label>
                 <textarea id="prodDesc" rows="3" placeholder="Descrição do produto">${product?.description || ''}</textarea>
                 ${product?.image ? `<img src="${product.image}" id="imgPreview" class="image-preview">` : '<img id="imgPreview" class="image-preview" style="display:none;">'}
-div class="file-input-wrapper">
+                <div class="file-input-wrapper">
                     <label style="display:flex;align-items:center;gap:0.5rem;color:var(--text);font-weight:500">
                         <i class="fas fa-image"></i>
                         Link Direto da Imagem (Use o link que termina em .jpg)
                     </label>
                     <input type="url" id="imagemURL" value="${product?.image || ''}" placeholder="Ex: https://i.ibb.co/.../imagem.jpg" style="width:100%;padding:0.75rem;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--light-bg);margin-top:0.25rem" oninput="previewImage()">
-
-
                 </div>
+
                 <div style="display:flex;gap:1rem;margin-top:1rem;">
                     <button class="btn btn-save" onclick="saveProduct('${product?._id || product?.id || 'null'}')"><i class="fas fa-save"></i> Salvar</button>
                     <button class="btn btn-cancel" onclick="closeModal()"><i class="fas fa-times"></i> Cancelar</button>
                 </div>
+            </div>
         </div>
     `;
     document.body.appendChild(modal);
@@ -377,18 +387,19 @@ function previewImage() {
 
 async function saveProduct(id) {
     const name = document.getElementById("prodName").value;
-    const price = parseFloat(document.getElementById("prodPrice").value);
+    const price = parseFloat(document.getElementById("prodPrice").value) || 0;
     const category = document.getElementById("prodCategory").value;
-    const stock = parseInt(document.getElementById("prodStock").value) || 0;
+    const stock = parseInt(document.getElementById("prodStock").value, 10) || 0;
     const description = document.getElementById("prodDesc").value;
-const image = document.getElementById("imagemURL").value;
+    const image = document.getElementById("imagemURL").value;
+    const badge = document.getElementById("prodBadge").value;
 
     if (!name || !price) {
         Swal.fire("Erro", "Nome e preço são obrigatórios", "error");
         return;
     }
 
-    const body = { name, price, category, stock, description, image };
+    const body = { name, price, category, stock, description, image, badge };
 
     try {
         const url = id && id !== 'null' ? `${API_URL}/produtos/${id}` : `${API_URL}/produtos`;
@@ -399,7 +410,11 @@ const image = document.getElementById("imagemURL").value;
             body: JSON.stringify(body)
         });
 
-        if (!res.ok) throw new Error("Erro ao salvar");
+        if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.error || "Erro ao salvar produto");
+        }
+
         productsCache = [];
         ordersCache = [];
         closeModal();
@@ -629,6 +644,7 @@ function openStatusModal(orderId, currentStatus) {
                     <button class="btn btn-save" onclick="updateOrderStatus('${orderId}')"><i class="fas fa-save"></i> Salvar</button>
                     <button class="btn btn-cancel" onclick="closeStatusModal()"><i class="fas fa-times"></i> Cancelar</button>
                 </div>
+            </div>
         </div>
     `;
     document.body.appendChild(modal);
